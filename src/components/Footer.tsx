@@ -59,6 +59,11 @@ export const Footer = () => {
                   Blog
                 </Link>
               </li>
+              <li>
+                <Link to="/desenvolvedor" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Desenvolvedor
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -90,8 +95,13 @@ export const Footer = () => {
           </p>
           <p className="text-sm text-muted-foreground">
             Desenvolvido com <span className="text-red-500">❤</span> por{" "}
-            <a href="#" className="text-primary hover:underline">
-              Design & Desenvolvimento
+            <a 
+              href="https://missaodesign.com" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-primary hover:underline"
+            >
+              Missão Design
             </a>
           </p>
         </div>

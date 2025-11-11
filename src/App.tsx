@@ -9,6 +9,7 @@ import Signup from "./pages/Signup";
 import Privacidade from "./pages/Privacidade";
 import Termos from "./pages/Termos";
 import GDPR from "./pages/GDPR";
+import Developer from "./pages/Developer";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/privacidade" element={<Privacidade />} />
           <Route path="/termos" element={<Termos />} />
           <Route path="/gdpr" element={<GDPR />} />
+          <Route path="/desenvolvedor" element={<Developer />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
