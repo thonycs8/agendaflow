@@ -50,7 +50,7 @@ const Signup = () => {
                   <RadioGroupItem value="business" id="business" />
                   <Label htmlFor="business" className="cursor-pointer flex-1">
                     <div className="font-medium">Negócio</div>
-                    <div className="text-xs text-muted-foreground">Salão, barbearia, restaurante</div>
+                    <div className="text-xs text-muted-foreground">Salões, barbearias, escritórios, restaurantes</div>
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2 border rounded-lg p-3 cursor-pointer hover:bg-accent/50">
@@ -77,11 +77,11 @@ const Signup = () => {
 
             {formData.userType === "business" && (
               <div className="space-y-2">
-                <Label htmlFor="businessName">Nome do negócio</Label>
+                <Label htmlFor="businessName">Nome do Negócio</Label>
                 <Input
                   id="businessName"
                   type="text"
-                  placeholder="Meu Salão"
+                  placeholder="Nome do seu negócio"
                   value={formData.businessName}
                   onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
                   required
