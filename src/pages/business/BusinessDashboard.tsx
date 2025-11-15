@@ -85,15 +85,15 @@ const BusinessDashboard = () => {
       case "servicos":
         return <BusinessServices businessId={business.id} />;
       case "clientes":
-        return <ClientsManagement businessId={business.id} />;
+        return <ClientsManagement />;
       case "planos":
-        return <MembershipPlans businessId={business.id} />;
+        return <MembershipPlans />;
       case "financeiro":
-        return <FinancialManagement businessId={business.id} />;
+        return <FinancialManagement />;
       case "analytics":
-        return <AnalyticsDashboard businessId={business.id} />;
+        return <AnalyticsDashboard />;
       case "configuracoes":
-        return <BusinessSettings businessId={business.id} />;
+        return <BusinessSettings />;
       default:
         return (
           <>
@@ -102,65 +102,6 @@ const BusinessDashboard = () => {
               <p className="text-muted-foreground">{business.category}</p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3 mb-8">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Agendamentos</CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalAppointments}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Profissionais</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalProfessionals}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Avaliação Média</CardTitle>
-                  <Star className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
-                </CardContent>
-              </Card>
-            </div>
-          </>
-        );
-    }
-  };
-
-  return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full flex-col">
-        <GlobalNav />
-        
-        <div className="flex flex-1">
-          <BusinessSidebar />
-          
-          <main className="flex-1 overflow-auto">
-            <div className="container py-6">
-              <div className="flex items-center gap-2 mb-6 md:hidden">
-                <SidebarTrigger />
-                <h1 className="text-xl font-bold">Menu</h1>
-              </div>
-              
-              {renderContent()}
-            </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
-  );
-};
-
-      <main className="container mx-auto px-4 py-8">
             <div className="grid gap-4 md:grid-cols-3 mb-8">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
