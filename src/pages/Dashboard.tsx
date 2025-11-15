@@ -6,14 +6,15 @@ import { Loader2 } from "lucide-react";
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { isAdmin, isBusinessOwner, isProfessional, loading: roleLoading } = useUserRole();
+  const { isAdmin, isBusinessOwner, isProfessional, loading: roleLoading, actualIsAdmin } = useUserRole();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!roleLoading) {
       if (!user) {
         navigate("/login");
-      } else if (isAdmin) {
+      } else if (actualIsAdmin) {
+        // Use actualIsAdmin instead of isAdmin to respect real permissions
         navigate("/admin");
       } else if (isBusinessOwner) {
         navigate("/business");
@@ -23,7 +24,7 @@ const Dashboard = () => {
         navigate("/client");
       }
     }
-  }, [user, isAdmin, isBusinessOwner, isProfessional, roleLoading, navigate]);
+  }, [user, isAdmin, isBusinessOwner, isProfessional, roleLoading, navigate, actualIsAdmin]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">
