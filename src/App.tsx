@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { OwnerLayout } from "@/components/layout/OwnerLayout";
+import { UniversalNav } from "@/components/layout/UniversalNav";
 
 // Public pages
 import Index from "./pages/Index";
@@ -55,6 +56,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <UniversalNav />
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Index />} />
