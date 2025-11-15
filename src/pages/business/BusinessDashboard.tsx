@@ -5,6 +5,7 @@ import { useUserRole } from "@/hooks/use-user-role";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, Star } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import BusinessServices from "@/components/business/BusinessServices";
 import BusinessProfessionals from "@/components/business/BusinessProfessionals";
 import BusinessAppointments from "@/components/business/BusinessAppointments";
@@ -77,63 +78,79 @@ const BusinessDashboard = () => {
   if (loading || !business) return null;
 
   const renderContent = () => {
-    switch (activeTab) {
-      case "agendamentos":
-        return <BusinessAppointments businessId={business.id} />;
-      case "profissionais":
-        return <BusinessProfessionals businessId={business.id} />;
-      case "servicos":
-        return <BusinessServices businessId={business.id} />;
-      case "clientes":
-        return <ClientsManagement />;
-      case "planos":
-        return <MembershipPlans />;
-      case "financeiro":
-        return <FinancialManagement />;
-      case "analytics":
-        return <AnalyticsDashboard />;
-      case "configuracoes":
-        return <BusinessSettings />;
-      default:
-        return (
-          <>
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{business.name}</h2>
-              <p className="text-muted-foreground">{business.category}</p>
-            </div>
+    const content = (() => {
+      switch (activeTab) {
+        case "agendamentos":
+          return <BusinessAppointments businessId={business.id} />;
+        case "profissionais":
+          return <BusinessProfessionals businessId={business.id} />;
+        case "servicos":
+          return <BusinessServices businessId={business.id} />;
+        case "clientes":
+          return <ClientsManagement />;
+        case "planos":
+          return <MembershipPlans />;
+        case "financeiro":
+          return <FinancialManagement />;
+        case "analytics":
+          return <AnalyticsDashboard />;
+        case "configuracoes":
+          return <BusinessSettings />;
+        default:
+          return (
+            <>
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold">{business.name}</h2>
+                <p className="text-muted-foreground">{business.category}</p>
+              </div>
 
-            <div className="grid gap-4 md:grid-cols-3 mb-8">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Agendamentos</CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalAppointments}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Profissionais</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalProfessionals}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Avaliação Média</CardTitle>
-                  <Star className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
-                </CardContent>
-              </Card>
-            </div>
-          </>
-        );
-    }
+              <div className="grid gap-4 md:grid-cols-3 mb-8">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Agendamentos</CardTitle>
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats.totalAppointments}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Profissionais</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats.totalProfessionals}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Avaliação Média</CardTitle>
+                    <Star className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          );
+      }
+    })();
+
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.2 }}
+        >
+          {content}
+        </motion.div>
+      </AnimatePresence>
+    );
   };
 
   return (

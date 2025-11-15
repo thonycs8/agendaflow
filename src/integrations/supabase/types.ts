@@ -149,6 +149,9 @@ export type Database = {
           owner_id: string
           phone: string | null
           rating: number | null
+          show_membership_banner: boolean | null
+          show_membership_plans: boolean | null
+          show_promotions_banner: boolean | null
           total_reviews: number | null
           updated_at: string | null
         }
@@ -166,6 +169,9 @@ export type Database = {
           owner_id: string
           phone?: string | null
           rating?: number | null
+          show_membership_banner?: boolean | null
+          show_membership_plans?: boolean | null
+          show_promotions_banner?: boolean | null
           total_reviews?: number | null
           updated_at?: string | null
         }
@@ -183,6 +189,9 @@ export type Database = {
           owner_id?: string
           phone?: string | null
           rating?: number | null
+          show_membership_banner?: boolean | null
+          show_membership_plans?: boolean | null
+          show_promotions_banner?: boolean | null
           total_reviews?: number | null
           updated_at?: string | null
         }
@@ -363,12 +372,19 @@ export type Database = {
           business_id: string
           commission_percentage: number | null
           created_at: string | null
+          created_by_id: string | null
           employment_type: string | null
           fixed_salary: number | null
           id: string
           is_active: boolean | null
           monthly_rent: number | null
           name: string
+          promotion_active: boolean | null
+          promotion_description: string | null
+          promotion_discount: number | null
+          promotion_end_date: string | null
+          promotion_start_date: string | null
+          promotion_title: string | null
           rating: number | null
           specialties: string[] | null
           total_reviews: number | null
@@ -381,12 +397,19 @@ export type Database = {
           business_id: string
           commission_percentage?: number | null
           created_at?: string | null
+          created_by_id?: string | null
           employment_type?: string | null
           fixed_salary?: number | null
           id?: string
           is_active?: boolean | null
           monthly_rent?: number | null
           name: string
+          promotion_active?: boolean | null
+          promotion_description?: string | null
+          promotion_discount?: number | null
+          promotion_end_date?: string | null
+          promotion_start_date?: string | null
+          promotion_title?: string | null
           rating?: number | null
           specialties?: string[] | null
           total_reviews?: number | null
@@ -399,12 +422,19 @@ export type Database = {
           business_id?: string
           commission_percentage?: number | null
           created_at?: string | null
+          created_by_id?: string | null
           employment_type?: string | null
           fixed_salary?: number | null
           id?: string
           is_active?: boolean | null
           monthly_rent?: number | null
           name?: string
+          promotion_active?: boolean | null
+          promotion_description?: string | null
+          promotion_discount?: number | null
+          promotion_end_date?: string | null
+          promotion_start_date?: string | null
+          promotion_title?: string | null
           rating?: number | null
           specialties?: string[] | null
           total_reviews?: number | null
@@ -545,6 +575,7 @@ export type Database = {
         Row: {
           business_id: string
           created_at: string | null
+          created_by_id: string | null
           description: string | null
           duration_minutes: number
           id: string
@@ -556,6 +587,7 @@ export type Database = {
         Insert: {
           business_id: string
           created_at?: string | null
+          created_by_id?: string | null
           description?: string | null
           duration_minutes: number
           id?: string
@@ -567,6 +599,7 @@ export type Database = {
         Update: {
           business_id?: string
           created_at?: string | null
+          created_by_id?: string | null
           description?: string | null
           duration_minutes?: number
           id?: string
