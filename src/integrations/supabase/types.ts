@@ -316,6 +316,48 @@ export type Database = {
           },
         ]
       }
+      feature_comparison_config: {
+        Row: {
+          business_value: string | null
+          category: string
+          coming_soon: boolean | null
+          created_at: string | null
+          feature_name: string
+          id: string
+          is_active: boolean | null
+          order_index: number | null
+          premium_value: string | null
+          starter_value: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          business_value?: string | null
+          category: string
+          coming_soon?: boolean | null
+          created_at?: string | null
+          feature_name: string
+          id?: string
+          is_active?: boolean | null
+          order_index?: number | null
+          premium_value?: string | null
+          starter_value?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          business_value?: string | null
+          category?: string
+          coming_soon?: boolean | null
+          created_at?: string | null
+          feature_name?: string
+          id?: string
+          is_active?: boolean | null
+          order_index?: number | null
+          premium_value?: string | null
+          starter_value?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       financial_transactions: {
         Row: {
           amount: number
@@ -379,6 +421,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      landing_page_config: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          cta_link: string | null
+          cta_text: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          metadata: Json | null
+          order_index: number | null
+          section: string
+          subtitle: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          cta_link?: string | null
+          cta_text?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          metadata?: Json | null
+          order_index?: number | null
+          section: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          cta_link?: string | null
+          cta_text?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          metadata?: Json | null
+          order_index?: number | null
+          section?: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      landing_page_templates: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          template_data: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          template_data: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          template_data?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       membership_plans: {
         Row: {
