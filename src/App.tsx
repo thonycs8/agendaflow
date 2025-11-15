@@ -24,7 +24,8 @@ import Servicos from "./pages/Servicos";
 import Profissionais from "./pages/Profissionais";
 import Agenda from "./pages/Agenda";
 import Assinaturas from "./pages/Assinaturas";
-import Demo from "./pages/Demo";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 // Protected pages
 import Dashboard from "./pages/Dashboard";
@@ -54,7 +55,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/demo" element={<Demo />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/developer" element={<Developer />} />
             <Route path="/gdpr" element={<GDPR />} />
             <Route path="/privacidade" element={<Privacidade />} />

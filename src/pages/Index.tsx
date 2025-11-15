@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { HeroSection } from "@/components/HeroSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
+import { DashboardShowcase } from "@/components/DashboardShowcase";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { ComparisonSection } from "@/components/ComparisonSection";
 import { PricingSection } from "@/components/PricingSection";
@@ -23,6 +24,7 @@ const Index = () => {
       <div className="flex-1">
         <HeroSection />
         <FeaturesSection />
+        <DashboardShowcase />
         <TestimonialsSection />
         <ComparisonSection />
         <PricingSection />
