@@ -8,6 +8,7 @@ import { useUserRole } from "@/hooks/use-user-role";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 export const ClientNav = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,55 +61,72 @@ export const ClientNav = () => {
 
   const NavLinks = () => (
     <>
-      <Link 
-        to="/home" 
-        className={`text-sm font-medium transition-colors ${
-          isActive("/home") 
-            ? "text-foreground" 
-            : "text-foreground/80 hover:text-foreground"
-        }`}
+      <Link
+        to="/"
+        className={cn(
+          "text-sm font-medium transition-colors hover:text-primary",
+          isActive("/") ? "text-foreground" : "text-muted-foreground"
+        )}
       >
         Início
       </Link>
-      <Link 
-        to="/servicos" 
-        className={`text-sm font-medium transition-colors ${
-          isActive("/servicos") 
-            ? "text-foreground" 
-            : "text-foreground/80 hover:text-foreground"
-        }`}
+      <Link
+        to="/servicos"
+        className={cn(
+          "text-sm font-medium transition-colors hover:text-primary",
+          isActive("/servicos") ? "text-foreground" : "text-muted-foreground"
+        )}
       >
         Serviços
       </Link>
-      <Link 
-        to="/profissionais" 
-        className={`text-sm font-medium transition-colors ${
-          isActive("/profissionais") 
-            ? "text-foreground" 
-            : "text-foreground/80 hover:text-foreground"
-        }`}
+      <Link
+        to="/profissionais"
+        className={cn(
+          "text-sm font-medium transition-colors hover:text-primary",
+          isActive("/profissionais")
+            ? "text-foreground"
+            : "text-muted-foreground"
+        )}
       >
         Profissionais
       </Link>
-      <Link 
-        to="/agenda" 
-        className={`text-sm font-medium transition-colors ${
-          isActive("/agenda") 
-            ? "text-foreground" 
-            : "text-foreground/80 hover:text-foreground"
-        }`}
+      <Link
+        to="/agendar"
+        className={cn(
+          "text-sm font-medium transition-colors hover:text-primary",
+          isActive("/agendar") ? "text-foreground" : "text-muted-foreground"
+        )}
+      >
+        Agendar
+      </Link>
+      <Link
+        to="/agenda"
+        className={cn(
+          "text-sm font-medium transition-colors hover:text-primary",
+          isActive("/agenda") ? "text-foreground" : "text-muted-foreground"
+        )}
       >
         Minha Agenda
       </Link>
-      <Link 
-        to="/assinaturas" 
-        className={`text-sm font-medium transition-colors ${
-          isActive("/assinaturas") 
-            ? "text-foreground" 
-            : "text-foreground/80 hover:text-foreground"
-        }`}
+      <Link
+        to="/assinaturas"
+        className={cn(
+          "text-sm font-medium transition-colors hover:text-primary",
+          isActive("/assinaturas")
+            ? "text-foreground"
+            : "text-muted-foreground"
+        )}
       >
         Assinaturas
+      </Link>
+      <Link
+        to="/blog"
+        className={cn(
+          "text-sm font-medium transition-colors hover:text-primary",
+          isActive("/blog") ? "text-foreground" : "text-muted-foreground"
+        )}
+      >
+        Blog
       </Link>
     </>
   );
