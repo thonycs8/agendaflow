@@ -17,9 +17,9 @@ const planFeatures = [
   {
     category: "Comunicação e Lembretes",
     features: [
-      { name: "Lembretes automáticos por email", starter: true, business: true, premium: true },
-      { name: "Lembretes SMS", starter: false, business: true, premium: true },
-      { name: "Notificações push", starter: false, business: false, premium: true },
+      { name: "Lembretes automáticos por email (Em breve)", starter: false, business: false, premium: false },
+      { name: "Lembretes SMS (Em breve)", starter: false, business: false, premium: false },
+      { name: "Notificações push (Em breve)", starter: false, business: false, premium: false },
       { name: "App Mobile (Em breve)", starter: false, business: false, premium: false },
     ]
   },
@@ -36,8 +36,9 @@ const planFeatures = [
   {
     category: "Pagamentos e Finanças",
     features: [
-      { name: "Gestão de pagamentos manual", starter: true, business: true, premium: true },
-      { name: "Pagamentos online integrados (Em breve)", starter: false, business: false, premium: false },
+      { name: "Gestão de pagamentos (Manual na barbearia)", starter: "Manual", business: "Manual", premium: "Manual" },
+      { name: "Pagamentos online integrados (Em breve)", starter: false, business: false, premium: "Breve" },
+      { name: "Maquininha de cartão integrada (Em breve)", starter: false, business: false, premium: "Breve" },
       { name: "Gestão de comissões", starter: false, business: true, premium: true },
       { name: "Planos de assinatura recorrentes", starter: false, business: true, premium: true },
     ]
