@@ -38,22 +38,29 @@ const CreateServiceDialog = ({
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.from("services").insert({
-      business_id: businessId,
-      ...formData,
-    });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { error } = await supabase.from("services").insert({
+        business_id: businessId,
+        created_by_id: user?.id,
+        ...formData,
+      });
 
-    if (error) {
+      if (error) throw error;
+
+      toast({ title: "Serviço criado com sucesso" });
+      onSuccess();
+      onClose();
+    } catch (error: any) {
       toast({
         title: "Erro",
         description: error.message,
         variant: "destructive",
       });
-    } else {
-      toast({ title: "Serviço criado com sucesso" });
-      onSuccess();
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
