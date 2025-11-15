@@ -5,8 +5,9 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Mail, Phone, Calendar, Star } from "lucide-react";
+import { Loader2, Mail, Phone, Calendar, Star, Shield, Settings, LayoutDashboard, Users, Building2, FileText, Crown } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Profile = () => {
@@ -47,6 +48,88 @@ const Profile = () => {
   return (
     <AppLayout title="Meu Perfil">
       <div className="max-w-4xl mx-auto space-y-6">
+        {isAdmin && (
+          <Card className="border-2 border-primary bg-gradient-to-br from-primary/5 via-background to-background">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-primary">
+                  <Shield className="h-6 w-6 text-primary-foreground" />
+                </div>
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    Painel de Administrador
+                    <Badge variant="destructive" className="ml-2">
+                      <Shield className="h-3 w-3 mr-1" />
+                      ADMIN
+                    </Badge>
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Acesso completo ao sistema
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 md:grid-cols-2">
+                <Button variant="outline" asChild className="justify-start h-auto py-4">
+                  <Link to="/admin">
+                    <LayoutDashboard className="h-5 w-5 mr-3" />
+                    <div className="text-left">
+                      <div className="font-semibold">Dashboard Admin</div>
+                      <div className="text-xs text-muted-foreground">Visão geral do sistema</div>
+                    </div>
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild className="justify-start h-auto py-4">
+                  <Link to="/admin?tab=users">
+                    <Users className="h-5 w-5 mr-3" />
+                    <div className="text-left">
+                      <div className="font-semibold">Gestão de Usuários</div>
+                      <div className="text-xs text-muted-foreground">Gerenciar todos os usuários</div>
+                    </div>
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild className="justify-start h-auto py-4">
+                  <Link to="/admin?tab=businesses">
+                    <Building2 className="h-5 w-5 mr-3" />
+                    <div className="text-left">
+                      <div className="font-semibold">Gestão de Negócios</div>
+                      <div className="text-xs text-muted-foreground">Gerenciar estabelecimentos</div>
+                    </div>
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild className="justify-start h-auto py-4">
+                  <Link to="/admin?tab=blog">
+                    <FileText className="h-5 w-5 mr-3" />
+                    <div className="text-left">
+                      <div className="font-semibold">Gestão de Blog</div>
+                      <div className="text-xs text-muted-foreground">Gerenciar posts e conteúdo</div>
+                    </div>
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild className="justify-start h-auto py-4">
+                  <Link to="/admin?tab=landing">
+                    <Crown className="h-5 w-5 mr-3" />
+                    <div className="text-left">
+                      <div className="font-semibold">Landing Page</div>
+                      <div className="text-xs text-muted-foreground">Editar página inicial</div>
+                    </div>
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild className="justify-start h-auto py-4">
+                  <Link to="/admin?tab=settings">
+                    <Settings className="h-5 w-5 mr-3" />
+                    <div className="text-left">
+                      <div className="font-semibold">Configurações</div>
+                      <div className="text-xs text-muted-foreground">Configurações do sistema</div>
+                    </div>
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle>Informações Pessoais</CardTitle>
@@ -63,24 +146,28 @@ const Profile = () => {
                 <h2 className="text-2xl font-bold">{profile?.full_name}</h2>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {isAdmin && (
-                    <span className="px-2 py-1 text-xs font-medium bg-destructive/10 text-destructive rounded">
-                      Admin
-                    </span>
+                    <Badge variant="destructive" className="gap-1">
+                      <Shield className="h-3 w-3" />
+                      Administrador
+                    </Badge>
                   )}
                   {isBusinessOwner && (
-                    <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded">
+                    <Badge variant="default" className="gap-1">
+                      <Building2 className="h-3 w-3" />
                       Proprietário
-                    </span>
+                    </Badge>
                   )}
                   {isProfessional && (
-                    <span className="px-2 py-1 text-xs font-medium bg-blue-500/10 text-blue-500 rounded">
+                    <Badge variant="secondary" className="gap-1">
+                      <Star className="h-3 w-3" />
                       Profissional
-                    </span>
+                    </Badge>
                   )}
                   {isClient && (
-                    <span className="px-2 py-1 text-xs font-medium bg-green-500/10 text-green-500 rounded">
+                    <Badge variant="outline" className="gap-1">
+                      <Calendar className="h-3 w-3" />
                       Cliente
-                    </span>
+                    </Badge>
                   )}
                 </div>
               </div>

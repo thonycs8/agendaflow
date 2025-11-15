@@ -19,6 +19,7 @@ export const GlobalNav = () => {
   const { isAdmin, isBusinessOwner, isProfessional, isClient } = useUserRole();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
+  const [business, setBusiness] = useState<any>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -33,21 +34,76 @@ export const GlobalNav = () => {
     fetchProfile();
   }, [user]);
 
+  useEffect(() => {
+    const fetchBusiness = async () => {
+      if (!user || isAdmin) return;
+
+      // Try to get business from professional
+      const { data: professional } = await supabase
+        .from("professionals")
+        .select("business_id, businesses(id, name, logo_url)")
+        .eq("user_id", user.id)
+        .single();
+
+      if (professional?.businesses) {
+        setBusiness(professional.businesses);
+        return;
+      }
+
+      // Try to get business from owner
+      const { data: ownedBusiness } = await supabase
+        .from("businesses")
+        .select("id, name, logo_url")
+        .eq("owner_id", user.id)
+        .single();
+
+      if (ownedBusiness) {
+        setBusiness(ownedBusiness);
+      }
+    };
+
+    fetchBusiness();
+  }, [user, isAdmin]);
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/login");
   };
 
+  const showAgendaFlow = isAdmin || !business;
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between gap-4">
         <Link to="/home" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-primary">
-            <Calendar className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent hidden sm:inline">
-            Agenda Flow
-          </span>
+          {showAgendaFlow ? (
+            <>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-primary">
+                <Calendar className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <span className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent hidden sm:inline">
+                Agenda Flow
+              </span>
+            </>
+          ) : (
+            <>
+              {business?.logo_url ? (
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={business.logo_url} />
+                  <AvatarFallback>
+                    <Building2 className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+                  <Building2 className="h-5 w-5 text-primary-foreground" />
+                </div>
+              )}
+              <span className="text-lg font-bold text-foreground hidden sm:inline">
+                {business?.name}
+              </span>
+            </>
+          )}
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
