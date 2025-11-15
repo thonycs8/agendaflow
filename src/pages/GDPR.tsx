@@ -11,7 +11,7 @@ const GDPR = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Compromisso com o GDPR</h2>
             <p>
-              A BookPro está totalmente comprometida com o Regulamento Geral de Proteção de Dados (GDPR) da União Europeia. Esta página explica como cumprimos com as exigências do GDPR.
+              O Agenda Flow está totalmente comprometido com o Regulamento Geral de Proteção de Dados (GDPR) da União Europeia. Esta página explica como cumprimos com as exigências do GDPR.
             </p>
           </section>
 
@@ -69,7 +69,7 @@ const GDPR = () => {
               Para exercer qualquer um dos seus direitos sob o GDPR, entre em contato conosco:
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>Email: gdpr@bookpro.com</li>
+              <li>Email: gdpr@agendaflow.com</li>
               <li>Formulário online em nosso portal de privacidade</li>
               <li>Carta registrada para nosso Encarregado de Proteção de Dados</li>
             </ul>
@@ -125,8 +125,8 @@ const GDPR = () => {
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Encarregado de Proteção de Dados</h2>
             <p>Nosso Encarregado de Proteção de Dados pode ser contactado em:</p>
             <p className="font-medium">
-              Email: dpo@bookpro.com<br />
-              Endereço: Encarregado de Proteção de Dados, BookPro, Lisboa, Portugal
+              Email: dpo@agendaflow.com<br />
+              Endereço: Encarregado de Proteção de Dados, Agenda Flow, Lisboa, Portugal
             </p>
           </section>
 

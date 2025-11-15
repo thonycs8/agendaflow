@@ -53,7 +53,7 @@ const Login = () => {
               <Calendar className="h-7 w-7 text-primary-foreground" />
             </div>
             <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              BookPro
+              Agenda Flow
             </span>
           </Link>
 

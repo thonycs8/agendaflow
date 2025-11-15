@@ -11,7 +11,7 @@ const Termos = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">1. Aceitação dos Termos</h2>
             <p>
-              Ao acessar e usar a plataforma BookPro, você concorda com estes Termos de Uso. Se não concordar com algum termo, não utilize nossos serviços.
+              Ao acessar e usar a plataforma Agenda Flow, você concorda com estes Termos de Uso. Se não concordar com algum termo, não utilize nossos serviços.
             </p>
           </section>
 
@@ -78,14 +78,14 @@ const Termos = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">7. Propriedade Intelectual</h2>
             <p>
-              Todo o conteúdo da plataforma BookPro (design, código, logotipos, textos) é propriedade da BookPro e protegido por leis de direitos autorais.
+              Todo o conteúdo da plataforma Agenda Flow (design, código, logotipos, textos) é propriedade do Agenda Flow e protegido por leis de direitos autorais.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">8. Limitação de Responsabilidade</h2>
             <p>
-              A BookPro fornece o serviço "como está". Não garantimos operação ininterrupta ou livre de erros. Nossa responsabilidade é limitada ao valor pago nos últimos 12 meses.
+              O Agenda Flow fornece o serviço "como está". Não garantimos operação ininterrupta ou livre de erros. Nossa responsabilidade é limitada ao valor pago nos últimos 12 meses.
             </p>
           </section>
 
@@ -107,8 +107,8 @@ const Termos = () => {
             <h2 className="text-2xl font-semibold mb-4 text-foreground">11. Contato</h2>
             <p>Para questões sobre estes termos:</p>
             <p className="font-medium">
-              Email: suporte@bookpro.com<br />
-              Telefone: +351 XXX XXX XXX<br />
+              Email: suporte@agendaflow.com<br />
+              Telefone: +351 123 456 789<br />
               Endereço: Lisboa, Portugal
             </p>
           </section>
