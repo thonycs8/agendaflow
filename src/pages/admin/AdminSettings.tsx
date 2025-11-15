@@ -7,7 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings, Shield, Bell, Database } from "lucide-react";
+import { Settings, Shield, Bell, Database, UserCheck, ArrowRightLeft, Users, Sparkles } from "lucide-react";
+import { PendingApprovals } from "@/components/admin/PendingApprovals";
+import { OwnershipTransfers } from "@/components/admin/OwnershipTransfers";
+import { UserPrivileges } from "@/components/admin/UserPrivileges";
+import { BusinessFeatures } from "@/components/admin/BusinessFeatures";
 
 const AdminSettings = () => {
   const [loading, setLoading] = useState(false);
@@ -41,10 +45,26 @@ const AdminSettings = () => {
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
           <TabsTrigger value="general">
             <Settings className="h-4 w-4 mr-2" />
             Geral
+          </TabsTrigger>
+          <TabsTrigger value="approvals">
+            <UserCheck className="h-4 w-4 mr-2" />
+            Aprovações
+          </TabsTrigger>
+          <TabsTrigger value="transfers">
+            <ArrowRightLeft className="h-4 w-4 mr-2" />
+            Transferências
+          </TabsTrigger>
+          <TabsTrigger value="privileges">
+            <Users className="h-4 w-4 mr-2" />
+            Privilégios
+          </TabsTrigger>
+          <TabsTrigger value="features">
+            <Sparkles className="h-4 w-4 mr-2" />
+            Funcionalidades
           </TabsTrigger>
           <TabsTrigger value="security">
             <Shield className="h-4 w-4 mr-2" />
@@ -99,6 +119,62 @@ const AdminSettings = () => {
                   }
                 />
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="approvals" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Aprovação de Profissionais e Proprietários</CardTitle>
+              <CardDescription>
+                Gerencie solicitações pendentes de novos profissionais e proprietários
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PendingApprovals />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="transfers" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Transferências de Propriedade</CardTitle>
+              <CardDescription>
+                Aprove ou rejeite solicitações de transferência de propriedade
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <OwnershipTransfers />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="privileges" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gestão de Privilégios de Usuários</CardTitle>
+              <CardDescription>
+                Adicione ou remova funções de clientes, profissionais e proprietários
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <UserPrivileges />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="features" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Funcionalidades Pro e Premium</CardTitle>
+              <CardDescription>
+                Configure os planos e funcionalidades disponíveis para cada negócio
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BusinessFeatures />
             </CardContent>
           </Card>
         </TabsContent>
