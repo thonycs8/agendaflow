@@ -8,6 +8,10 @@ export const useUserRole = () => {
   const { user } = useAuth();
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [roleOverride, setRoleOverride] = useState<UserRole | null>(() => {
+    const stored = localStorage.getItem('admin_role_override');
+    return stored ? (stored as UserRole) : null;
+  });
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -34,19 +38,39 @@ export const useUserRole = () => {
     fetchRoles();
   }, [user]);
 
-  const hasRole = (role: UserRole) => roles.includes(role);
-  const isAdmin = hasRole("admin");
-  const isBusinessOwner = hasRole("business_owner");
-  const isProfessional = hasRole("professional");
-  const isClient = hasRole("client");
+  const actualIsAdmin = roles.includes("admin");
+  
+  // If admin has role override active, use that instead
+  const effectiveRoles = actualIsAdmin && roleOverride ? [roleOverride] : roles;
+  
+  const hasRole = (role: UserRole) => effectiveRoles.includes(role);
+  const isAdmin = effectiveRoles.includes("admin");
+  const isBusinessOwner = effectiveRoles.includes("business_owner");
+  const isProfessional = effectiveRoles.includes("professional");
+  const isClient = effectiveRoles.includes("client");
+
+  const setAdminRoleOverride = (role: UserRole | null) => {
+    if (!actualIsAdmin) return; // Only admins can override
+    
+    if (role) {
+      localStorage.setItem('admin_role_override', role);
+    } else {
+      localStorage.removeItem('admin_role_override');
+    }
+    setRoleOverride(role);
+  };
 
   return {
-    roles,
+    roles: effectiveRoles,
+    actualRoles: roles,
     loading,
     hasRole,
     isAdmin,
     isBusinessOwner,
     isProfessional,
     isClient,
+    actualIsAdmin,
+    roleOverride,
+    setAdminRoleOverride,
   };
 };

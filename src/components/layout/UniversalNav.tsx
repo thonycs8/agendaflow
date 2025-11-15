@@ -9,11 +9,12 @@ import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { AdminRoleSwitcher } from "./AdminRoleSwitcher";
 
 export const UniversalNav = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const { isAdmin, isBusinessOwner, isProfessional, loading } = useUserRole();
+  const { isAdmin, isBusinessOwner, isProfessional, loading, actualIsAdmin, roleOverride } = useUserRole();
   const location = useLocation();
 
   const handleSignOut = async () => {
@@ -66,6 +67,13 @@ export const UniversalNav = () => {
   };
 
   const getUserBadge = () => {
+    if (roleOverride) {
+      // Show which role is being overridden
+      if (roleOverride === "business_owner") return <Badge variant="default">PROPRIETÁRIO (teste)</Badge>;
+      if (roleOverride === "professional") return <Badge variant="secondary">PROFISSIONAL (teste)</Badge>;
+      if (roleOverride === "client") return <Badge variant="outline">CLIENTE (teste)</Badge>;
+    }
+    
     if (isAdmin) return <Badge variant="destructive">ADMIN</Badge>;
     if (isBusinessOwner) return <Badge variant="default">PROPRIETÁRIO</Badge>;
     if (isProfessional) return <Badge variant="secondary">PROFISSIONAL</Badge>;
@@ -120,6 +128,8 @@ export const UniversalNav = () => {
         <div className="flex items-center gap-2">
           {user ? (
             <>
+              {actualIsAdmin && <AdminRoleSwitcher />}
+              
               <Link to="/profile" className="hidden sm:inline-flex">
                 <Button variant="ghost" size="sm">
                   <Avatar className="h-6 w-6 mr-2">
@@ -166,6 +176,12 @@ export const UniversalNav = () => {
                 </nav>
                 {user && (
                   <div className="flex flex-col gap-2 pt-4 border-t">
+                    {actualIsAdmin && (
+                      <div className="px-2 mb-2">
+                        <AdminRoleSwitcher />
+                      </div>
+                    )}
+                    
                     <Link to="/profile" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start">
                         <Avatar className="h-6 w-6 mr-2">
