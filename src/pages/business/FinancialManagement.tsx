@@ -6,8 +6,12 @@ import { useUserRole } from "@/hooks/use-user-role";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowDownCircle, ArrowUpCircle, Plus, Euro } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Plus, Euro, FileDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
+import { pt } from "date-fns/locale";
 import {
   Dialog,
   DialogContent,
@@ -72,6 +76,102 @@ export default function FinancialManagement() {
       navigate("/login");
     }
   }, [isBusinessOwner, roleLoading, navigate]);
+
+  const generatePDFReport = async (period: "month" | "year") => {
+    if (!user) return;
+
+    const { data: business } = await supabase
+      .from("businesses")
+      .select("name")
+      .eq("owner_id", user.id)
+      .single();
+
+    if (!business) return;
+
+    const now = new Date();
+    const startDate = period === "month" ? startOfMonth(now) : startOfYear(now);
+    const endDate = period === "month" ? endOfMonth(now) : endOfYear(now);
+
+    const { data: reportTransactions } = await supabase
+      .from("financial_transactions")
+      .select("*")
+      .eq("business_id", businessId)
+      .gte("transaction_date", startDate.toISOString())
+      .lte("transaction_date", endDate.toISOString())
+      .order("transaction_date", { ascending: false });
+
+    if (!reportTransactions || reportTransactions.length === 0) {
+      toast({
+        title: "Sem dados",
+        description: "Não há transações para este período",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(20);
+    doc.text(`Relatório Financeiro - ${business.name}`, 14, 20);
+    
+    doc.setFontSize(12);
+    doc.text(
+      `Período: ${format(startDate, "dd/MM/yyyy", { locale: pt })} - ${format(
+        endDate,
+        "dd/MM/yyyy",
+        { locale: pt }
+      )}`,
+      14,
+      30
+    );
+
+    // Summary
+    const totalIncome = reportTransactions
+      .filter((t) => t.type === "income")
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    const totalExpense = reportTransactions
+      .filter((t) => t.type === "expense")
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    const balance = totalIncome - totalExpense;
+
+    doc.setFontSize(14);
+    doc.text("Resumo", 14, 40);
+    doc.setFontSize(10);
+    doc.text(`Total Entradas: €${totalIncome.toFixed(2)}`, 14, 48);
+    doc.text(`Total Saídas: €${totalExpense.toFixed(2)}`, 14, 54);
+    doc.text(`Saldo: €${balance.toFixed(2)}`, 14, 60);
+
+    // Transactions table
+    const tableData = reportTransactions.map((tx) => [
+      format(new Date(tx.transaction_date), "dd/MM/yyyy", { locale: pt }),
+      tx.type === "income" ? "Entrada" : "Saída",
+      tx.category,
+      tx.description || "—",
+      `€${Number(tx.amount).toFixed(2)}`,
+    ]);
+
+    autoTable(doc, {
+      startY: 70,
+      head: [["Data", "Tipo", "Categoria", "Descrição", "Valor"]],
+      body: tableData,
+      theme: "striped",
+      headStyles: { fillColor: [79, 70, 229] },
+      styles: { fontSize: 9 },
+    });
+
+    // Save PDF
+    const fileName = `relatorio-financeiro-${period === "month" ? "mensal" : "anual"}-${format(
+      now,
+      "yyyy-MM"
+    )}.pdf`;
+    doc.save(fileName);
+
+    toast({
+      title: "Relatório gerado",
+      description: `PDF exportado: ${fileName}`,
+    });
+  };
 
   const fetchTransactions = async () => {
     if (!user) return;
@@ -176,6 +276,17 @@ export default function FinancialManagement() {
           <p className="text-muted-foreground">
             Controlo de entradas, saídas e fluxo de caixa
           </p>
+        </div>
+
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => generatePDFReport("month")}>
+            <FileDown className="mr-2 h-4 w-4" />
+            Relatório Mensal (PDF)
+          </Button>
+          <Button variant="outline" onClick={() => generatePDFReport("year")}>
+            <FileDown className="mr-2 h-4 w-4" />
+            Relatório Anual (PDF)
+          </Button>
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
