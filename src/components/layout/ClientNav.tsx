@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Calendar, Menu, Home, User, LogOut } from "lucide-react";
+import { Calendar, Menu, Home, User, LogOut, Briefcase, Users, CalendarCheck, Crown } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
@@ -35,14 +35,44 @@ export const ClientNav = () => {
         Início
       </Link>
       <Link 
-        to="/profile" 
+        to="/servicos" 
         className={`text-sm font-medium transition-colors ${
-          isActive("/profile") 
+          isActive("/servicos") 
             ? "text-foreground" 
             : "text-foreground/80 hover:text-foreground"
         }`}
       >
-        Perfil
+        Serviços
+      </Link>
+      <Link 
+        to="/profissionais" 
+        className={`text-sm font-medium transition-colors ${
+          isActive("/profissionais") 
+            ? "text-foreground" 
+            : "text-foreground/80 hover:text-foreground"
+        }`}
+      >
+        Profissionais
+      </Link>
+      <Link 
+        to="/agenda" 
+        className={`text-sm font-medium transition-colors ${
+          isActive("/agenda") 
+            ? "text-foreground" 
+            : "text-foreground/80 hover:text-foreground"
+        }`}
+      >
+        Minha Agenda
+      </Link>
+      <Link 
+        to="/assinaturas" 
+        className={`text-sm font-medium transition-colors ${
+          isActive("/assinaturas") 
+            ? "text-foreground" 
+            : "text-foreground/80 hover:text-foreground"
+        }`}
+      >
+        Assinaturas
       </Link>
     </>
   );
@@ -99,6 +129,50 @@ export const ClientNav = () => {
                   <Link to="/home">
                     <Home className="h-4 w-4 mr-2" />
                     Início
+                  </Link>
+                </Button>
+                <Button 
+                  variant={isActive("/servicos") ? "secondary" : "ghost"} 
+                  asChild 
+                  onClick={() => setIsOpen(false)}
+                  className="justify-start"
+                >
+                  <Link to="/servicos">
+                    <Briefcase className="h-4 w-4 mr-2" />
+                    Serviços
+                  </Link>
+                </Button>
+                <Button 
+                  variant={isActive("/profissionais") ? "secondary" : "ghost"} 
+                  asChild 
+                  onClick={() => setIsOpen(false)}
+                  className="justify-start"
+                >
+                  <Link to="/profissionais">
+                    <Users className="h-4 w-4 mr-2" />
+                    Profissionais
+                  </Link>
+                </Button>
+                <Button 
+                  variant={isActive("/agenda") ? "secondary" : "ghost"} 
+                  asChild 
+                  onClick={() => setIsOpen(false)}
+                  className="justify-start"
+                >
+                  <Link to="/agenda">
+                    <CalendarCheck className="h-4 w-4 mr-2" />
+                    Minha Agenda
+                  </Link>
+                </Button>
+                <Button 
+                  variant={isActive("/assinaturas") ? "secondary" : "ghost"} 
+                  asChild 
+                  onClick={() => setIsOpen(false)}
+                  className="justify-start"
+                >
+                  <Link to="/assinaturas">
+                    <Crown className="h-4 w-4 mr-2" />
+                    Assinaturas
                   </Link>
                 </Button>
                 <Button 
