@@ -4,8 +4,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { useUserRole } from "@/hooks/use-user-role";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Briefcase, TrendingUp, DollarSign } from "lucide-react";
 import { ProfessionalLayout } from "@/components/layout/ProfessionalLayout";
+import { ProfessionalClients } from "@/components/professional/ProfessionalClients";
 
 const ProfessionalDashboard = () => {
   const { user } = useAuth();
@@ -131,16 +133,43 @@ const ProfessionalDashboard = () => {
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Bem-vindo ao seu Painel Profissional</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Aqui você pode gerir sua agenda, serviços e promoções. Use o menu lateral para navegar entre as diferentes seções.
-            </p>
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="clients" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="clients">Meus Clientes</TabsTrigger>
+            <TabsTrigger value="appointments">Agendamentos</TabsTrigger>
+            <TabsTrigger value="promotions">Promoções</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="clients">
+            <ProfessionalClients />
+          </TabsContent>
+          
+          <TabsContent value="appointments">
+            <Card>
+              <CardHeader>
+                <CardTitle>Seus Agendamentos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Funcionalidade de agendamentos em desenvolvimento
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="promotions">
+            <Card>
+              <CardHeader>
+                <CardTitle>Suas Promoções</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Funcionalidade de promoções em desenvolvimento
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </ProfessionalLayout>
   );

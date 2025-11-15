@@ -686,6 +686,56 @@ export type Database = {
           },
         ]
       }
+      professional_clients: {
+        Row: {
+          client_address: string | null
+          client_email: string
+          client_id: string
+          client_name: string
+          client_phone: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          professional_id: string
+          share_with_business: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_address?: string | null
+          client_email: string
+          client_id: string
+          client_name: string
+          client_phone?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          professional_id: string
+          share_with_business?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_address?: string | null
+          client_email?: string
+          client_id?: string
+          client_name?: string
+          client_phone?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          professional_id?: string
+          share_with_business?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_clients_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professionals: {
         Row: {
           avatar_url: string | null
