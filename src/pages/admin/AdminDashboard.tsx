@@ -55,10 +55,18 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
+      <header className="border-b bg-card shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Painel de Administração</h1>
-          <Button onClick={handleSignOut} variant="outline">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center">
+              <Building2 className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold">Admin Dashboard</h1>
+              <p className="text-xs text-muted-foreground">Agenda Flow</p>
+            </div>
+          </div>
+          <Button onClick={handleSignOut} variant="outline" size="sm">
             <LogOut className="h-4 w-4 mr-2" />
             Sair
           </Button>
@@ -66,46 +74,86 @@ const AdminDashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
-          <Card>
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold mb-2">Visão Geral</h2>
+          <p className="text-muted-foreground">
+            Gerencie todos os aspectos da plataforma
+          </p>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-3 mb-8">
+          <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total de Negócios</CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
+              <Building2 className="h-5 w-5 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalBusinesses}</div>
+              <div className="text-3xl font-bold">{stats.totalBusinesses}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Estabelecimentos cadastrados
+              </p>
             </CardContent>
           </Card>
-          <Card>
+          
+          <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <Users className="h-5 w-5 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalUsers}</div>
+              <div className="text-3xl font-bold">{stats.totalUsers}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Usuários registrados
+              </p>
             </CardContent>
           </Card>
-          <Card>
+          
+          <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total de Agendamentos</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Calendar className="h-5 w-5 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalAppointments}</div>
+              <div className="text-3xl font-bold">{stats.totalAppointments}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Reservas realizadas
+              </p>
             </CardContent>
           </Card>
         </div>
 
-        <Tabs defaultValue="businesses" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="businesses">Negócios</TabsTrigger>
-            <TabsTrigger value="users">Usuários</TabsTrigger>
+        <Tabs defaultValue="businesses" className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="businesses" className="gap-2">
+              <Building2 className="h-4 w-4" />
+              Negócios
+            </TabsTrigger>
+            <TabsTrigger value="users" className="gap-2">
+              <Users className="h-4 w-4" />
+              Usuários
+            </TabsTrigger>
           </TabsList>
-          <TabsContent value="businesses">
-            <AdminBusinessList />
+          
+          <TabsContent value="businesses" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gestão de Negócios</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AdminBusinessList />
+              </CardContent>
+            </Card>
           </TabsContent>
-          <TabsContent value="users">
-            <AdminUserList />
+          
+          <TabsContent value="users" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gestão de Usuários</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AdminUserList />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </main>

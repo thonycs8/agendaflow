@@ -20,6 +20,10 @@ import FAQ from "./pages/FAQ";
 import Reembolso from "./pages/Reembolso";
 import Contacto from "./pages/Contacto";
 import BusinessPublic from "./pages/BusinessPublic";
+import Servicos from "./pages/Servicos";
+import Profissionais from "./pages/Profissionais";
+import Agenda from "./pages/Agenda";
+import Assinaturas from "./pages/Assinaturas";
 
 // Protected pages
 import Dashboard from "./pages/Dashboard";
@@ -82,6 +86,38 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/servicos"
+              element={
+                <ProtectedRoute>
+                  <Servicos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profissionais"
+              element={
+                <ProtectedRoute>
+                  <Profissionais />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/agenda"
+              element={
+                <ProtectedRoute>
+                  <Agenda />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/assinaturas"
+              element={
+                <ProtectedRoute>
+                  <Assinaturas />
                 </ProtectedRoute>
               }
             />
