@@ -23,6 +23,9 @@ export type Database = {
           duration_minutes: number
           id: string
           notes: string | null
+          payment_amount: number | null
+          payment_method: string | null
+          payment_status: string | null
           professional_id: string | null
           service_id: string | null
           status: Database["public"]["Enums"]["appointment_status"] | null
@@ -36,6 +39,9 @@ export type Database = {
           duration_minutes: number
           id?: string
           notes?: string | null
+          payment_amount?: number | null
+          payment_method?: string | null
+          payment_status?: string | null
           professional_id?: string | null
           service_id?: string | null
           status?: Database["public"]["Enums"]["appointment_status"] | null
@@ -49,6 +55,9 @@ export type Database = {
           duration_minutes?: number
           id?: string
           notes?: string | null
+          payment_amount?: number | null
+          payment_method?: string | null
+          payment_status?: string | null
           professional_id?: string | null
           service_id?: string | null
           status?: Database["public"]["Enums"]["appointment_status"] | null
@@ -132,14 +141,186 @@ export type Database = {
         }
         Relationships: []
       }
+      client_memberships: {
+        Row: {
+          business_id: string
+          client_id: string
+          created_at: string | null
+          end_date: string
+          id: string
+          max_usage: number | null
+          plan_id: string | null
+          start_date: string
+          status: string | null
+          updated_at: string | null
+          usage_count: number | null
+        }
+        Insert: {
+          business_id: string
+          client_id: string
+          created_at?: string | null
+          end_date: string
+          id?: string
+          max_usage?: number | null
+          plan_id?: string | null
+          start_date?: string
+          status?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Update: {
+          business_id?: string
+          client_id?: string
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          max_usage?: number | null
+          plan_id?: string | null
+          start_date?: string
+          status?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_memberships_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_memberships_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "membership_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_transactions: {
+        Row: {
+          amount: number
+          appointment_id: string | null
+          business_id: string
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          professional_id: string | null
+          transaction_date: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          appointment_id?: string | null
+          business_id: string
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          professional_id?: string | null
+          transaction_date?: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string | null
+          business_id?: string
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          professional_id?: string | null
+          transaction_date?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_transactions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      membership_plans: {
+        Row: {
+          business_id: string
+          created_at: string | null
+          description: string | null
+          duration_days: number
+          id: string
+          is_active: boolean | null
+          name: string
+          price: number
+          services_included: Json
+          updated_at: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string | null
+          description?: string | null
+          duration_days?: number
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price: number
+          services_included?: Json
+          updated_at?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string | null
+          description?: string | null
+          duration_days?: number
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price?: number
+          services_included?: Json
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "membership_plans_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professionals: {
         Row: {
           avatar_url: string | null
           bio: string | null
           business_id: string
+          commission_percentage: number | null
           created_at: string | null
+          employment_type: string | null
+          fixed_salary: number | null
           id: string
           is_active: boolean | null
+          monthly_rent: number | null
           name: string
           rating: number | null
           specialties: string[] | null
@@ -151,9 +332,13 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           business_id: string
+          commission_percentage?: number | null
           created_at?: string | null
+          employment_type?: string | null
+          fixed_salary?: number | null
           id?: string
           is_active?: boolean | null
+          monthly_rent?: number | null
           name: string
           rating?: number | null
           specialties?: string[] | null
@@ -165,9 +350,13 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           business_id?: string
+          commission_percentage?: number | null
           created_at?: string | null
+          employment_type?: string | null
+          fixed_salary?: number | null
           id?: string
           is_active?: boolean | null
+          monthly_rent?: number | null
           name?: string
           rating?: number | null
           specialties?: string[] | null
@@ -263,6 +452,41 @@ export type Database = {
           },
           {
             foreignKeyName: "reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedule_blocks: {
+        Row: {
+          created_at: string | null
+          end_time: string
+          id: string
+          professional_id: string
+          reason: string | null
+          start_time: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_time: string
+          id?: string
+          professional_id: string
+          reason?: string | null
+          start_time: string
+        }
+        Update: {
+          created_at?: string | null
+          end_time?: string
+          id?: string
+          professional_id?: string
+          reason?: string | null
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_blocks_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"

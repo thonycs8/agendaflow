@@ -10,6 +10,10 @@ import { Calendar, Users, Star, LogOut } from "lucide-react";
 import BusinessServices from "@/components/business/BusinessServices";
 import BusinessProfessionals from "@/components/business/BusinessProfessionals";
 import BusinessAppointments from "@/components/business/BusinessAppointments";
+import AnalyticsDashboard from "./AnalyticsDashboard";
+import ClientsManagement from "./ClientsManagement";
+import MembershipPlans from "./MembershipPlans";
+import FinancialManagement from "./FinancialManagement";
 
 const BusinessDashboard = () => {
   const { user, signOut } = useAuth();
@@ -118,20 +122,43 @@ const BusinessDashboard = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue="appointments" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="appointments">Agendamentos</TabsTrigger>
+        <Tabs defaultValue="dashboard" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-7">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="appointments">Agenda</TabsTrigger>
             <TabsTrigger value="professionals">Profissionais</TabsTrigger>
             <TabsTrigger value="services">Serviços</TabsTrigger>
+            <TabsTrigger value="clients">Clientes</TabsTrigger>
+            <TabsTrigger value="plans">Fidelização</TabsTrigger>
+            <TabsTrigger value="financial">Financeiro</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="dashboard">
+            <AnalyticsDashboard />
+          </TabsContent>
+
           <TabsContent value="appointments">
             <BusinessAppointments businessId={business.id} />
           </TabsContent>
+
           <TabsContent value="professionals">
             <BusinessProfessionals businessId={business.id} />
           </TabsContent>
+
           <TabsContent value="services">
             <BusinessServices businessId={business.id} />
+          </TabsContent>
+
+          <TabsContent value="clients">
+            <ClientsManagement />
+          </TabsContent>
+
+          <TabsContent value="plans">
+            <MembershipPlans />
+          </TabsContent>
+
+          <TabsContent value="financial">
+            <FinancialManagement />
           </TabsContent>
         </Tabs>
       </main>
