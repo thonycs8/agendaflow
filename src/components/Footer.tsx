@@ -24,18 +24,18 @@ export const Footer = () => {
             <h4 className="font-semibold mb-4">Produto</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="#funcionalidades" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a href="#funcionalidades" className="text-muted-foreground hover:text-foreground transition-colors">
                   Funcionalidades
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="#precos" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a href="#precos" className="text-muted-foreground hover:text-foreground transition-colors">
                   Preços
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/demo" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Demonstração
+                <Link to="/faq" className="text-muted-foreground hover:text-foreground transition-colors">
+                  FAQ
                 </Link>
               </li>
             </ul>
@@ -45,22 +45,12 @@ export const Footer = () => {
             <h4 className="font-semibold mb-4">Empresa</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/sobre" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Sobre Nós
-                </Link>
-              </li>
-              <li>
                 <Link to="/contacto" className="text-muted-foreground hover:text-foreground transition-colors">
                   Contacto
                 </Link>
               </li>
               <li>
-                <Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link to="/desenvolvedor" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/developer" className="text-muted-foreground hover:text-foreground transition-colors">
                   Desenvolvedor
                 </Link>
               </li>
