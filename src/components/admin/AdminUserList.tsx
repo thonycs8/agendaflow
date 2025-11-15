@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Search, UserCog, Users, Building2, Briefcase, Shield } from "lucide-react";
+import { Search, UserCog, Users, Building2, Briefcase, Shield, UserPlus } from "lucide-react";
 
 interface User {
   id: string;
@@ -42,6 +42,14 @@ const AdminUserList = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<UserRole[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    email: "",
+    password: "",
+    full_name: "",
+    phone: "",
+  });
+  const [newUserRoles, setNewUserRoles] = useState<UserRole[]>(["client"]);
   const { toast } = useToast();
 
   const roleOptions: { value: UserRole; label: string; icon: any }[] = [
@@ -122,6 +130,62 @@ const AdminUserList = () => {
       setSelectedRoles(selectedRoles.filter((r) => r !== role));
     } else {
       setSelectedRoles([...selectedRoles, role]);
+    }
+  };
+
+  const handleCreateUser = async () => {
+    if (!newUserData.email || !newUserData.password || !newUserData.full_name) {
+      toast({
+        title: "Erro",
+        description: "Por favor, preencha todos os campos obrigatórios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: newUserData.email,
+        password: newUserData.password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: newUserData.full_name,
+        },
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        await supabase.from("profiles").insert({
+          id: authData.user.id,
+          full_name: newUserData.full_name,
+          phone: newUserData.phone || null,
+        });
+
+        for (const role of newUserRoles) {
+          await supabase.from("user_roles").insert({
+            user_id: authData.user.id,
+            role,
+          });
+        }
+
+        toast({
+          title: "Sucesso",
+          description: "Usuário criado com sucesso",
+        });
+
+        setIsCreateDialogOpen(false);
+        setNewUserData({ email: "", password: "", full_name: "", phone: "" });
+        setNewUserRoles(["client"]);
+        fetchUsers();
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível criar o usuário",
+        variant: "destructive",
+      });
     }
   };
 
@@ -385,6 +449,83 @@ const AdminUserList = () => {
                 Cancelar
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Criar Novo Usuário</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Email *</Label>
+              <Input
+                type="email"
+                value={newUserData.email}
+                onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+                placeholder="email@exemplo.com"
+              />
+            </div>
+            <div>
+              <Label>Senha *</Label>
+              <Input
+                type="password"
+                value={newUserData.password}
+                onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+                placeholder="Mínimo 6 caracteres"
+              />
+            </div>
+            <div>
+              <Label>Nome Completo *</Label>
+              <Input
+                value={newUserData.full_name}
+                onChange={(e) => setNewUserData({ ...newUserData, full_name: e.target.value })}
+                placeholder="Nome completo"
+              />
+            </div>
+            <div>
+              <Label>Telefone</Label>
+              <Input
+                value={newUserData.phone}
+                onChange={(e) => setNewUserData({ ...newUserData, phone: e.target.value })}
+                placeholder="+351 xxx xxx xxx"
+              />
+            </div>
+            <div>
+              <Label className="mb-3 block">Papéis do Usuário</Label>
+              <div className="space-y-3">
+                {roleOptions.map((option) => {
+                  const Icon = option.icon;
+                  return (
+                    <div key={option.value} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`new-${option.value}`}
+                        checked={newUserRoles.includes(option.value)}
+                        onCheckedChange={() => {
+                          if (newUserRoles.includes(option.value)) {
+                            setNewUserRoles(newUserRoles.filter((r) => r !== option.value));
+                          } else {
+                            setNewUserRoles([...newUserRoles, option.value]);
+                          }
+                        }}
+                      />
+                      <Label
+                        htmlFor={`new-${option.value}`}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <Icon className="h-4 w-4" />
+                        {option.label}
+                      </Label>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <Button onClick={handleCreateUser} className="w-full">
+              Criar Usuário
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

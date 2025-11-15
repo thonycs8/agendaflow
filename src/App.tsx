@@ -26,6 +26,7 @@ import Agenda from "./pages/Agenda";
 import Assinaturas from "./pages/Assinaturas";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import Agendar from "./pages/Agendar";
 
 // Protected pages
 import Dashboard from "./pages/Dashboard";
@@ -37,6 +38,10 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 
 // Business Owner
 import BusinessDashboard from "./pages/business/BusinessDashboard";
+
+// Professional
+import ProfessionalDashboard from "./pages/professional/ProfessionalDashboard";
+import ProfessionalServices from "./pages/professional/ProfessionalServices";
 
 // Client
 import ClientDashboard from "./pages/client/ClientDashboard";
@@ -125,6 +130,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/agendar"
+              element={
+                <ProtectedRoute>
+                  <Agendar />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Admin Routes */}
             <Route
@@ -142,6 +155,24 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="business_owner">
                   <BusinessDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Professional Routes */}
+            <Route
+              path="/professional"
+              element={
+                <ProtectedRoute requiredRole="professional">
+                  <ProfessionalDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/professional/servicos"
+              element={
+                <ProtectedRoute requiredRole="professional">
+                  <ProfessionalServices />
                 </ProtectedRoute>
               }
             />
