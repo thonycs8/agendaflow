@@ -3,7 +3,8 @@ import {
   Building2, 
   Users, 
   Calendar,
-  Settings
+  Settings,
+  Layout
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -35,6 +36,12 @@ const menuItems = [
     url: "/admin#usuarios",
     icon: Users,
     section: "usuarios"
+  },
+  {
+    title: "Landing Page",
+    url: "/admin#landing-page",
+    icon: Layout,
+    section: "landing-page"
   },
   {
     title: "Agendamentos",

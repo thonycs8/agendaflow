@@ -12,6 +12,10 @@ import AdminSettings from "./AdminSettings";
 import { GlobalNav } from "@/components/layout/GlobalNav";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LandingPageSections } from "@/components/admin/LandingPageSections";
+import { FeatureComparisonManager } from "@/components/admin/FeatureComparisonManager";
+import { TemplateManager } from "@/components/admin/TemplateManager";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -63,6 +67,37 @@ const AdminDashboard = () => {
           return <AdminUserList />;
         case "configuracoes":
           return <AdminSettings />;
+        case "landing-page":
+          return (
+            <div className="space-y-6">
+              <div className="mb-8">
+                <h2 className="text-3xl font-bold mb-2">Gestão da Landing Page</h2>
+                <p className="text-muted-foreground">
+                  Edite seções, funcionalidades e templates da página inicial
+                </p>
+              </div>
+              
+              <Tabs defaultValue="sections" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="sections">Seções</TabsTrigger>
+                  <TabsTrigger value="features">Funcionalidades</TabsTrigger>
+                  <TabsTrigger value="templates">Templates</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="sections" className="mt-6">
+                  <LandingPageSections />
+                </TabsContent>
+                
+                <TabsContent value="features" className="mt-6">
+                  <FeatureComparisonManager />
+                </TabsContent>
+                
+                <TabsContent value="templates" className="mt-6">
+                  <TemplateManager />
+                </TabsContent>
+              </Tabs>
+            </div>
+          );
         default:
           return (
             <>
