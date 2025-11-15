@@ -87,6 +87,68 @@ export type Database = {
           },
         ]
       }
+      business_features: {
+        Row: {
+          business_id: string
+          can_create_memberships: boolean | null
+          can_create_promotions: boolean | null
+          can_customize_branding: boolean | null
+          can_export_reports: boolean | null
+          can_manage_finances: boolean | null
+          can_use_analytics: boolean | null
+          can_use_api: boolean | null
+          created_at: string | null
+          custom_features: Json | null
+          id: string
+          max_professionals: number | null
+          max_services: number | null
+          plan_tier: string
+          updated_at: string | null
+        }
+        Insert: {
+          business_id: string
+          can_create_memberships?: boolean | null
+          can_create_promotions?: boolean | null
+          can_customize_branding?: boolean | null
+          can_export_reports?: boolean | null
+          can_manage_finances?: boolean | null
+          can_use_analytics?: boolean | null
+          can_use_api?: boolean | null
+          created_at?: string | null
+          custom_features?: Json | null
+          id?: string
+          max_professionals?: number | null
+          max_services?: number | null
+          plan_tier?: string
+          updated_at?: string | null
+        }
+        Update: {
+          business_id?: string
+          can_create_memberships?: boolean | null
+          can_create_promotions?: boolean | null
+          can_customize_branding?: boolean | null
+          can_export_reports?: boolean | null
+          can_manage_finances?: boolean | null
+          can_use_analytics?: boolean | null
+          can_use_api?: boolean | null
+          created_at?: string | null
+          custom_features?: Json | null
+          id?: string
+          max_professionals?: number | null
+          max_services?: number | null
+          plan_tier?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_features_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_settings: {
         Row: {
           advance_booking_days: number | null
@@ -358,6 +420,97 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "membership_plans_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ownership_transfers: {
+        Row: {
+          approved_by: string | null
+          business_id: string
+          completed_at: string | null
+          current_owner_id: string
+          id: string
+          new_owner_id: string
+          notes: string | null
+          requested_at: string
+          status: string
+        }
+        Insert: {
+          approved_by?: string | null
+          business_id: string
+          completed_at?: string | null
+          current_owner_id: string
+          id?: string
+          new_owner_id: string
+          notes?: string | null
+          requested_at?: string
+          status?: string
+        }
+        Update: {
+          approved_by?: string | null
+          business_id?: string
+          completed_at?: string | null
+          current_owner_id?: string
+          id?: string
+          new_owner_id?: string
+          notes?: string | null
+          requested_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ownership_transfers_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pending_approvals: {
+        Row: {
+          approval_type: string
+          business_id: string | null
+          id: string
+          metadata: Json | null
+          notes: string | null
+          requested_at: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          approval_type: string
+          business_id?: string | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          approval_type?: string
+          business_id?: string | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_approvals_business_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
