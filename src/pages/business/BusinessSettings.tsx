@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Clock, Calendar, DollarSign, Save } from "lucide-react";
+import { Settings, Clock, Calendar, DollarSign, Save, Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
+import { TransferOwnershipDialog } from "@/components/business/TransferOwnershipDialog";
 
 const settingsSchema = z.object({
   opening_hours: z.record(z.object({
@@ -41,6 +42,7 @@ export default function BusinessSettings() {
   const [loading, setLoading] = useState(true);
   const [businessId, setBusinessId] = useState<string>("");
   const [settingsId, setSettingsId] = useState<string>("");
+  const [business, setBusiness] = useState<any>(null);
   
   const [openingHours, setOpeningHours] = useState<OpeningHours>({
     monday: { start: "09:00", end: "18:00", closed: false },
@@ -529,6 +531,36 @@ export default function BusinessSettings() {
                 <Save className="mr-2 h-4 w-4" />
                 Guardar Configurações
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ownership" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Transferência de Propriedade</CardTitle>
+              <CardDescription>
+                Transfira a propriedade deste negócio para um dos seus profissionais.
+                Esta ação requer aprovação do administrador.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 border border-warning/50 bg-warning/5 rounded-lg">
+                  <h4 className="font-semibold text-sm mb-2">⚠️ Atenção</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Apenas profissionais com conta de usuário podem receber a propriedade</li>
+                    <li>Você perderá o acesso administrativo completo ao negócio</li>
+                    <li>A transferência precisa ser aprovada por um administrador</li>
+                    <li>Após a aprovação, a ação não pode ser revertida</li>
+                  </ul>
+                </div>
+
+                <TransferOwnershipDialog 
+                  businessId={businessId}
+                  businessName={business?.name || "Negócio"}
+                />
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
