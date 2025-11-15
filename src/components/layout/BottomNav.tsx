@@ -6,7 +6,6 @@ const navItems = [
   { icon: Home, label: "Início", path: "/home" },
   { icon: Calendar, label: "Agenda", path: "/agenda" },
   { icon: Briefcase, label: "Serviços", path: "/servicos" },
-  { icon: Users, label: "Profissionais", path: "/profissionais" },
   { icon: User, label: "Perfil", path: "/profile" },
 ];
 
