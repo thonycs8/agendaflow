@@ -11,7 +11,7 @@ const Privacidade = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">1. Informações que Coletamos</h2>
             <p>
-              Na BookPro, levamos a sua privacidade a sério. Coletamos apenas as informações necessárias para fornecer e melhorar os nossos serviços:
+              No Agenda Flow, levamos a sua privacidade a sério. Coletamos apenas as informações necessárias para fornecer e melhorar os nossos serviços:
             </p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Informações de conta (nome, email, telefone)</li>
@@ -83,8 +83,8 @@ const Privacidade = () => {
               Para questões sobre privacidade ou para exercer seus direitos, entre em contato:
             </p>
             <p className="font-medium">
-              Email: privacidade@bookpro.com<br />
-              Telefone: +351 XXX XXX XXX
+              Email: privacidade@agendaflow.com<br />
+              Telefone: +351 123 456 789
             </p>
           </section>
 
