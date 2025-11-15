@@ -10,6 +10,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import BusinessDashboard from "./pages/business/BusinessDashboard";
+import ClientDashboard from "./pages/client/ClientDashboard";
 import Privacidade from "./pages/Privacidade";
 import Termos from "./pages/Termos";
 import GDPR from "./pages/GDPR";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/business" element={<BusinessDashboard />} />
+            <Route path="/client" element={<ClientDashboard />} />
             <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/termos" element={<Termos />} />
             <Route path="/gdpr" element={<GDPR />} />
