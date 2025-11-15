@@ -3,19 +3,21 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Menu } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
 
   const NavLinks = () => (
     <>
-      <Link to="#funcionalidades" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
+      <Link to="/#funcionalidades" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
         Funcionalidades
       </Link>
-      <Link to="#precos" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
+      <Link to="/#precos" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
         Preços
       </Link>
-      <Link to="#contacto" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
+      <Link to="/#contacto" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
         Contacto
       </Link>
     </>
@@ -29,7 +31,7 @@ export const Navbar = () => {
             <Calendar className="h-6 w-6 text-primary-foreground" />
           </div>
           <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            BookPro
+            Agenda Flow
           </span>
         </Link>
 
@@ -39,12 +41,25 @@ export const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" asChild>
-            <Link to="/login">Entrar</Link>
-          </Button>
-          <Button variant="hero" asChild>
-            <Link to="/signup">Começar Grátis</Link>
-          </Button>
+          {user ? (
+            <>
+              <Button variant="ghost" asChild>
+                <Link to="/profile">Perfil</Link>
+              </Button>
+              <Button variant="hero" asChild>
+                <Link to="/home">Dashboard</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link to="/login">Entrar</Link>
+              </Button>
+              <Button variant="hero" asChild>
+                <Link to="/signup">Começar Grátis</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile Navigation */}
@@ -58,12 +73,25 @@ export const Navbar = () => {
             <div className="flex flex-col gap-6 mt-6">
               <NavLinks />
               <div className="flex flex-col gap-3 pt-4 border-t">
-                <Button variant="ghost" asChild onClick={() => setIsOpen(false)}>
-                  <Link to="/login">Entrar</Link>
-                </Button>
-                <Button variant="hero" asChild onClick={() => setIsOpen(false)}>
-                  <Link to="/signup">Começar Grátis</Link>
-                </Button>
+                {user ? (
+                  <>
+                    <Button variant="ghost" asChild onClick={() => setIsOpen(false)}>
+                      <Link to="/profile">Perfil</Link>
+                    </Button>
+                    <Button variant="hero" asChild onClick={() => setIsOpen(false)}>
+                      <Link to="/home">Dashboard</Link>
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" asChild onClick={() => setIsOpen(false)}>
+                      <Link to="/login">Entrar</Link>
+                    </Button>
+                    <Button variant="hero" asChild onClick={() => setIsOpen(false)}>
+                      <Link to="/signup">Começar Grátis</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </SheetContent>
