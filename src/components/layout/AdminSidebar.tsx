@@ -4,7 +4,8 @@ import {
   Users, 
   Calendar,
   Settings,
-  Layout
+  Layout,
+  BookOpen
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -42,6 +43,12 @@ const menuItems = [
     url: "/admin#landing-page",
     icon: Layout,
     section: "landing-page"
+  },
+  {
+    title: "Blog",
+    url: "/admin#blog",
+    icon: BookOpen,
+    section: "blog"
   },
   {
     title: "Agendamentos",

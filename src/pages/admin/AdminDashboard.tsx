@@ -14,6 +14,7 @@ import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LandingPageEditor } from "@/components/admin/LandingPageEditor";
+import { BlogManager } from "@/components/admin/BlogManager";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -77,6 +78,8 @@ const AdminDashboard = () => {
               <LandingPageEditor />
             </div>
           );
+        case "blog":
+          return <BlogManager />;
         default:
           return (
             <>

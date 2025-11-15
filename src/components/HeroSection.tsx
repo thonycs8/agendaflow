@@ -36,6 +36,12 @@ export const HeroSection = () => {
               <Button variant="outline" size="lg" asChild>
                 <Link to="#precos">Ver Preços</Link>
               </Button>
+              <Button variant="outline" size="lg" asChild>
+                <Link to="/admin">Acesso Admin</Link>
+              </Button>
+              <Button variant="outline" size="lg" asChild>
+                <Link to="/business">Dashboard Business</Link>
+              </Button>
             </div>
 
             <div className="flex items-center gap-8 pt-4">
