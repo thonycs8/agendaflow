@@ -16,7 +16,7 @@ export const ProtectedRoute = ({
   requireAuth = true,
 }: ProtectedRouteProps) => {
   const { user, loading: authLoading } = useAuth();
-  const { hasRole, loading: roleLoading, roles } = useUserRole();
+  const { hasRole, loading: roleLoading, roles, actualRoles, actualIsAdmin } = useUserRole();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,7 +26,8 @@ export const ProtectedRoute = ({
       user: !!user, 
       requiredRole, 
       hasRole: requiredRole ? hasRole(requiredRole) : 'N/A',
-      allRoles: roles
+      allRoles: roles,
+      actualRoles
     });
 
     if (!authLoading && !roleLoading) {
@@ -36,12 +37,18 @@ export const ProtectedRoute = ({
         return;
       }
 
-      if (requiredRole && !hasRole(requiredRole)) {
+      // If user is admin, allow access to everything
+      if (actualIsAdmin) {
+        return;
+      }
+
+      // Otherwise check actual roles (not override)
+      if (requiredRole && !actualRoles.includes(requiredRole)) {
         console.log('Redirecting to profile - missing role:', requiredRole);
         navigate("/profile");
       }
     }
-  }, [user, requiredRole, hasRole, authLoading, roleLoading, navigate, requireAuth, roles]);
+  }, [user, requiredRole, hasRole, authLoading, roleLoading, navigate, requireAuth, roles, actualRoles, actualIsAdmin]);
 
   if (authLoading || roleLoading) {
     return (
@@ -55,7 +62,13 @@ export const ProtectedRoute = ({
     return null;
   }
 
-  if (requiredRole && !hasRole(requiredRole)) {
+  // Admin can access everything
+  if (actualIsAdmin) {
+    return <>{children}</>;
+  }
+
+  // Otherwise check actual roles
+  if (requiredRole && !actualRoles.includes(requiredRole)) {
     return null;
   }
 
