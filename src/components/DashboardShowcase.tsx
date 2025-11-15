@@ -20,6 +20,7 @@ const planFeatures = [
       { name: "Lembretes automáticos por email", starter: true, business: true, premium: true },
       { name: "Lembretes SMS", starter: false, business: true, premium: true },
       { name: "Notificações push", starter: false, business: false, premium: true },
+      { name: "App Mobile (Em breve)", starter: false, business: false, premium: false },
     ]
   },
   {
@@ -29,16 +30,16 @@ const planFeatures = [
       { name: "Relatórios básicos", starter: false, business: true, premium: true },
       { name: "Relatórios avançados", starter: false, business: false, premium: true },
       { name: "Análises de performance", starter: false, business: false, premium: true },
-      { name: "Exportação de dados", starter: false, business: false, premium: true },
+      { name: "Exportação de dados", starter: false, business: true, premium: true },
     ]
   },
   {
     category: "Pagamentos e Finanças",
     features: [
       { name: "Gestão de pagamentos manual", starter: true, business: true, premium: true },
-      { name: "Pagamentos online integrados", starter: false, business: false, premium: true },
+      { name: "Pagamentos online integrados (Em breve)", starter: false, business: false, premium: false },
       { name: "Gestão de comissões", starter: false, business: true, premium: true },
-      { name: "Planos de assinatura recorrentes", starter: false, business: false, premium: true },
+      { name: "Planos de assinatura recorrentes", starter: false, business: true, premium: true },
     ]
   },
   {
@@ -55,8 +56,8 @@ const planFeatures = [
     category: "Suporte",
     features: [
       { name: "Suporte por email", starter: true, business: true, premium: true },
-      { name: "Suporte prioritário", starter: false, business: true, premium: true },
-      { name: "Suporte 24/7", starter: false, business: false, premium: true },
+      { name: "Suporte prioritário", starter: true, business: true, premium: true },
+      { name: "Suporte 24/7", starter: true, business: true, premium: true },
       { name: "Gestor de conta dedicado", starter: false, business: false, premium: true },
     ]
   }
