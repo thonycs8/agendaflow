@@ -87,6 +87,53 @@ export type Database = {
           },
         ]
       }
+      business_settings: {
+        Row: {
+          advance_booking_days: number | null
+          booking_buffer_minutes: number | null
+          business_id: string
+          cancellation_hours: number | null
+          created_at: string | null
+          default_service_duration: number | null
+          holidays: Json | null
+          id: string
+          opening_hours: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          advance_booking_days?: number | null
+          booking_buffer_minutes?: number | null
+          business_id: string
+          cancellation_hours?: number | null
+          created_at?: string | null
+          default_service_duration?: number | null
+          holidays?: Json | null
+          id?: string
+          opening_hours?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          advance_booking_days?: number | null
+          booking_buffer_minutes?: number | null
+          business_id?: string
+          cancellation_hours?: number | null
+          created_at?: string | null
+          default_service_duration?: number | null
+          holidays?: Json | null
+          id?: string
+          opening_hours?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_settings_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       businesses: {
         Row: {
           address: string | null

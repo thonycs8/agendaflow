@@ -14,6 +14,7 @@ import AnalyticsDashboard from "./AnalyticsDashboard";
 import ClientsManagement from "./ClientsManagement";
 import MembershipPlans from "./MembershipPlans";
 import FinancialManagement from "./FinancialManagement";
+import BusinessSettings from "./BusinessSettings";
 
 const BusinessDashboard = () => {
   const { user, signOut } = useAuth();
@@ -123,7 +124,7 @@ const BusinessDashboard = () => {
         </div>
 
         <Tabs defaultValue="dashboard" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="appointments">Agenda</TabsTrigger>
             <TabsTrigger value="professionals">Profissionais</TabsTrigger>
@@ -131,6 +132,7 @@ const BusinessDashboard = () => {
             <TabsTrigger value="clients">Clientes</TabsTrigger>
             <TabsTrigger value="plans">Fidelização</TabsTrigger>
             <TabsTrigger value="financial">Financeiro</TabsTrigger>
+            <TabsTrigger value="settings">Configurações</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">
@@ -159,6 +161,10 @@ const BusinessDashboard = () => {
 
           <TabsContent value="financial">
             <FinancialManagement />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <BusinessSettings />
           </TabsContent>
         </Tabs>
       </main>
