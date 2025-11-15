@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AdminUserList from "@/components/admin/AdminUserList";
 import AdminBusinessList from "@/components/admin/AdminBusinessList";
 import AdminSettings from "./AdminSettings";
-import { GlobalNav } from "@/components/layout/GlobalNav";
+import { AdminNav } from "@/components/layout/AdminNav";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -153,7 +153,7 @@ const AdminDashboard = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full flex-col">
-        <GlobalNav />
+        <AdminNav />
         
         <div className="flex flex-1">
           <AdminSidebar />

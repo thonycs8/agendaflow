@@ -19,9 +19,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Search, UserCog, Users, Building2, Briefcase, Shield, UserPlus } from "lucide-react";
+import { Search, UserCog, Users, Building2, Briefcase, Shield, UserPlus, Pencil, Trash2 } from "lucide-react";
 
 interface User {
   id: string;
@@ -43,6 +53,12 @@ const AdminUserList = () => {
   const [selectedRoles, setSelectedRoles] = useState<UserRole[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [editUserData, setEditUserData] = useState({
+    full_name: "",
+    phone: "",
+  });
   const [newUserData, setNewUserData] = useState({
     email: "",
     password: "",
@@ -130,6 +146,90 @@ const AdminUserList = () => {
       setSelectedRoles(selectedRoles.filter((r) => r !== role));
     } else {
       setSelectedRoles([...selectedRoles, role]);
+    }
+  };
+
+  const openEditDialog = (user: User) => {
+    setSelectedUser(user);
+    setEditUserData({
+      full_name: user.full_name,
+      phone: user.phone || "",
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const openDeleteDialog = (user: User) => {
+    setSelectedUser(user);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleUpdateUser = async () => {
+    if (!selectedUser || !editUserData.full_name) {
+      toast({
+        title: "Erro",
+        description: "Nome é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: editUserData.full_name,
+          phone: editUserData.phone || null,
+        })
+        .eq("id", selectedUser.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Usuário atualizado com sucesso",
+      });
+
+      setIsEditDialogOpen(false);
+      fetchUsers();
+    } catch (error) {
+      console.error("Error updating user:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o usuário",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!selectedUser) return;
+
+    try {
+      // Delete user roles first
+      await supabase.from("user_roles").delete().eq("user_id", selectedUser.id);
+
+      // Delete profile
+      await supabase.from("profiles").delete().eq("id", selectedUser.id);
+
+      // Delete from auth (requires admin)
+      const { error: authError } = await supabase.auth.admin.deleteUser(selectedUser.id);
+
+      if (authError) throw authError;
+
+      toast({
+        title: "Sucesso",
+        description: "Usuário excluído com sucesso",
+      });
+
+      setIsDeleteDialogOpen(false);
+      fetchUsers();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o usuário",
+        variant: "destructive",
+      });
     }
   };
 
@@ -347,6 +447,15 @@ const AdminUserList = () => {
       </Card>
 
       <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Lista de Usuários
+            </CardTitle>
+            <Badge variant="secondary">{filteredUsers.length} usuários</Badge>
+          </div>
+        </CardHeader>
         <CardContent className="pt-6">
           <Table>
             <TableHeader>
@@ -390,14 +499,31 @@ const AdminUserList = () => {
                       {new Date(user.created_at).toLocaleDateString("pt-BR")}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openRoleDialog(user)}
-                      >
-                        <UserCog className="h-4 w-4 mr-2" />
-                        Gerenciar
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openRoleDialog(user)}
+                        >
+                          <UserCog className="h-4 w-4 mr-2" />
+                          Roles
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditDialog(user)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openDeleteDialog(user)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -452,6 +578,62 @@ const AdminUserList = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Usuário</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Nome Completo *</Label>
+              <Input
+                value={editUserData.full_name}
+                onChange={(e) => setEditUserData({ ...editUserData, full_name: e.target.value })}
+                placeholder="Nome completo"
+              />
+            </div>
+            <div>
+              <Label>Telefone</Label>
+              <Input
+                value={editUserData.phone}
+                onChange={(e) => setEditUserData({ ...editUserData, phone: e.target.value })}
+                placeholder="+351 xxx xxx xxx"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleUpdateUser} className="flex-1">
+                Salvar Alterações
+              </Button>
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o usuário <strong>{selectedUser?.full_name}</strong>?
+              Esta ação não pode ser desfeita e todos os dados associados serão removidos permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-w-md">
