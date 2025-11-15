@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserRole } from "@/hooks/use-user-role";
@@ -6,16 +6,33 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, Briefcase, Star } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Home = () => {
   const { user } = useAuth();
   const { isBusinessOwner, isAdmin } = useUserRole();
   const navigate = useNavigate();
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     if (!user) {
       navigate("/");
+      return;
     }
+
+    const fetchProfile = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (data) {
+        setProfile(data);
+      }
+    };
+
+    fetchProfile();
   }, [user, navigate]);
 
   if (isAdmin) {
@@ -31,12 +48,16 @@ const Home = () => {
   return (
     <AppLayout title="Início">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Bem-vindo ao Agenda Flow</h1>
-          <p className="text-muted-foreground mt-2">
-            Gerencie seus agendamentos de forma simples e eficiente
-          </p>
-        </div>
+        <Card className="bg-gradient-primary text-primary-foreground">
+          <CardContent className="pt-6">
+            <h1 className="text-3xl font-bold mb-2">
+              Olá, {profile?.full_name?.split(' ')[0] || 'Bem-vindo'}! 👋
+            </h1>
+            <p className="text-lg opacity-90">
+              Gerencie seus agendamentos de forma simples e eficiente
+            </p>
+          </CardContent>
+        </Card>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/agenda")}>
