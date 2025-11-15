@@ -16,6 +16,10 @@ import Developer from "./pages/Developer";
 import GDPR from "./pages/GDPR";
 import Privacidade from "./pages/Privacidade";
 import Termos from "./pages/Termos";
+import FAQ from "./pages/FAQ";
+import Reembolso from "./pages/Reembolso";
+import Contacto from "./pages/Contacto";
+import BusinessPublic from "./pages/BusinessPublic";
 
 // Protected pages
 import Dashboard from "./pages/Dashboard";
@@ -49,6 +53,10 @@ const App = () => (
             <Route path="/gdpr" element={<GDPR />} />
             <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/termos" element={<Termos />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/reembolso" element={<Reembolso />} />
+            <Route path="/contacto" element={<Contacto />} />
+            <Route path="/negocio/:slug" element={<BusinessPublic />} />
 
             {/* Protected Routes - Redirect based on role */}
             <Route

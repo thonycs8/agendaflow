@@ -18,7 +18,7 @@ const Termos = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">2. Descrição do Serviço</h2>
             <p>
-              A BookPro é uma plataforma de gestão de agendamentos para negócios de serviços. Oferecemos:
+              O Agenda Flow é uma plataforma de gestão de agendamentos para negócios de serviços. Oferecemos:
             </p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Sistema de agendamento online</li>

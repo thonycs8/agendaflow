@@ -12,7 +12,7 @@ export const Footer = () => {
                 <Calendar className="h-6 w-6 text-primary-foreground" />
               </div>
               <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                BookPro
+                Agenda Flow
               </span>
             </Link>
             <p className="text-sm text-muted-foreground">
@@ -91,7 +91,7 @@ export const Footer = () => {
 
         <div className="border-t border-border/40 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2024 BookPro. Todos os direitos reservados.
+            © {new Date().getFullYear()} Agenda Flow. Todos os direitos reservados.
           </p>
           <p className="text-sm text-muted-foreground">
             Desenvolvido com <span className="text-red-500">❤</span> por{" "}
