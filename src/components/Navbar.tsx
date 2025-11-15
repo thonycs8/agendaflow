@@ -11,13 +11,13 @@ export const Navbar = () => {
 
   const NavLinks = () => (
     <>
-      <Link to="/#funcionalidades" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
+      <a href="#funcionalidades" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
         Funcionalidades
-      </Link>
-      <Link to="/#precos" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
+      </a>
+      <a href="#precos" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
         Preços
-      </Link>
-      <Link to="/#contacto" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
+      </a>
+      <Link to="/contacto" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
         Contacto
       </Link>
     </>
