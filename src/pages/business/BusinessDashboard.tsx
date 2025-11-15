@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserRole } from "@/hooks/use-user-role";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Users, Star, LogOut } from "lucide-react";
+import { Calendar, Users, Star } from "lucide-react";
 import BusinessServices from "@/components/business/BusinessServices";
 import BusinessProfessionals from "@/components/business/BusinessProfessionals";
 import BusinessAppointments from "@/components/business/BusinessAppointments";
@@ -15,17 +13,23 @@ import ClientsManagement from "./ClientsManagement";
 import MembershipPlans from "./MembershipPlans";
 import FinancialManagement from "./FinancialManagement";
 import BusinessSettings from "./BusinessSettings";
+import { GlobalNav } from "@/components/layout/GlobalNav";
+import { BusinessSidebar } from "@/components/layout/BusinessSidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 const BusinessDashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { isBusinessOwner, loading } = useUserRole();
   const navigate = useNavigate();
+  const location = useLocation();
   const [business, setBusiness] = useState<any>(null);
   const [stats, setStats] = useState({
     totalAppointments: 0,
     totalProfessionals: 0,
     averageRating: 0,
   });
+
+  const activeTab = location.hash.replace("#", "") || "overview";
 
   useEffect(() => {
     if (!loading && !isBusinessOwner) {
@@ -70,105 +74,148 @@ const BusinessDashboard = () => {
     }
   }, [user, isBusinessOwner]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/login");
-  };
-
   if (loading || !business) return null;
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case "agendamentos":
+        return <BusinessAppointments businessId={business.id} />;
+      case "profissionais":
+        return <BusinessProfessionals businessId={business.id} />;
+      case "servicos":
+        return <BusinessServices businessId={business.id} />;
+      case "clientes":
+        return <ClientsManagement businessId={business.id} />;
+      case "planos":
+        return <MembershipPlans businessId={business.id} />;
+      case "financeiro":
+        return <FinancialManagement businessId={business.id} />;
+      case "analytics":
+        return <AnalyticsDashboard businessId={business.id} />;
+      case "configuracoes":
+        return <BusinessSettings businessId={business.id} />;
+      default:
+        return (
+          <>
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">{business.name}</h2>
+              <p className="text-muted-foreground">{business.category}</p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3 mb-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Agendamentos</CardTitle>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.totalAppointments}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Profissionais</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.totalProfessionals}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Avaliação Média</CardTitle>
+                  <Star className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        );
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{business.name}</h1>
-            <p className="text-sm text-muted-foreground">{business.category}</p>
-          </div>
-          <Button onClick={handleSignOut} variant="outline">
-            <LogOut className="h-4 w-4 mr-2" />
-            Sair
-          </Button>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full flex-col">
+        <GlobalNav />
+        
+        <div className="flex flex-1">
+          <BusinessSidebar />
+          
+          <main className="flex-1 overflow-auto">
+            <div className="container py-6">
+              <div className="flex items-center gap-2 mb-6 md:hidden">
+                <SidebarTrigger />
+                <h1 className="text-xl font-bold">Menu</h1>
+              </div>
+              
+              {renderContent()}
+            </div>
+          </main>
         </div>
-      </header>
+      </div>
+    </SidebarProvider>
+  );
+};
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Agendamentos</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalAppointments}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Profissionais</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalProfessionals}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avaliação Média</CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)} ⭐</div>
-            </CardContent>
-          </Card>
+            <div className="grid gap-4 md:grid-cols-3 mb-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Agendamentos</CardTitle>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.totalAppointments}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Profissionais</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.totalProfessionals}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Avaliação Média</CardTitle>
+                  <Star className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        );
+    }
+  };
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full flex-col">
+        <GlobalNav />
+        
+        <div className="flex flex-1">
+          <BusinessSidebar />
+          
+          <main className="flex-1 overflow-auto">
+            <div className="container py-6">
+              <div className="flex items-center gap-2 mb-6 md:hidden">
+                <SidebarTrigger />
+                <h1 className="text-xl font-bold">Menu</h1>
+              </div>
+              
+              {renderContent()}
+            </div>
+          </main>
         </div>
-
-        <Tabs defaultValue="dashboard" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-8">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="appointments">Agenda</TabsTrigger>
-            <TabsTrigger value="professionals">Profissionais</TabsTrigger>
-            <TabsTrigger value="services">Serviços</TabsTrigger>
-            <TabsTrigger value="clients">Clientes</TabsTrigger>
-            <TabsTrigger value="plans">Fidelização</TabsTrigger>
-            <TabsTrigger value="financial">Financeiro</TabsTrigger>
-            <TabsTrigger value="settings">Configurações</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="dashboard">
-            <AnalyticsDashboard />
-          </TabsContent>
-
-          <TabsContent value="appointments">
-            <BusinessAppointments businessId={business.id} />
-          </TabsContent>
-
-          <TabsContent value="professionals">
-            <BusinessProfessionals businessId={business.id} />
-          </TabsContent>
-
-          <TabsContent value="services">
-            <BusinessServices businessId={business.id} />
-          </TabsContent>
-
-          <TabsContent value="clients">
-            <ClientsManagement />
-          </TabsContent>
-
-          <TabsContent value="plans">
-            <MembershipPlans />
-          </TabsContent>
-
-          <TabsContent value="financial">
-            <FinancialManagement />
-          </TabsContent>
-
-          <TabsContent value="settings">
-            <BusinessSettings />
-          </TabsContent>
-        </Tabs>
-      </main>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 };
 
