@@ -10,12 +10,12 @@ import { ptBR } from "date-fns/locale";
 interface Appointment {
   id: string;
   appointment_date: string;
-  status: string;
-  notes: string;
+  status: "pending" | "confirmed" | "completed" | "cancelled";
+  notes: string | null;
   duration_minutes: number;
-  profiles: { full_name: string };
-  services: { name: string };
-  professionals: { name: string };
+  profiles: { full_name: string } | null;
+  services: { name: string } | null;
+  professionals: { name: string } | null;
 }
 
 interface BusinessAppointmentsProps {
@@ -34,9 +34,9 @@ const BusinessAppointments = ({ businessId }: BusinessAppointmentsProps) => {
       .select(
         `
         *,
-        profiles:client_id(full_name),
-        services:service_id(name),
-        professionals:professional_id(name)
+        profiles!appointments_client_id_fkey(full_name),
+        services!appointments_service_id_fkey(name),
+        professionals!appointments_professional_id_fkey(name)
       `
       )
       .eq("business_id", businessId)
@@ -49,7 +49,7 @@ const BusinessAppointments = ({ businessId }: BusinessAppointmentsProps) => {
         variant: "destructive",
       });
     } else {
-      setAppointments(data || []);
+      setAppointments(data as any || []);
     }
     setLoading(false);
   };
@@ -58,7 +58,7 @@ const BusinessAppointments = ({ businessId }: BusinessAppointmentsProps) => {
     fetchAppointments();
   }, [businessId]);
 
-  const updateStatus = async (id: string, newStatus: string) => {
+  const updateStatus = async (id: string, newStatus: "pending" | "confirmed" | "completed" | "cancelled") => {
     const { error } = await supabase
       .from("appointments")
       .update({ status: newStatus })
