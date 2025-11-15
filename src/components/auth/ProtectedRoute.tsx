@@ -16,21 +16,32 @@ export const ProtectedRoute = ({
   requireAuth = true,
 }: ProtectedRouteProps) => {
   const { user, loading: authLoading } = useAuth();
-  const { hasRole, loading: roleLoading } = useUserRole();
+  const { hasRole, loading: roleLoading, roles } = useUserRole();
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('ProtectedRoute check:', { 
+      authLoading, 
+      roleLoading, 
+      user: !!user, 
+      requiredRole, 
+      hasRole: requiredRole ? hasRole(requiredRole) : 'N/A',
+      allRoles: roles
+    });
+
     if (!authLoading && !roleLoading) {
       if (requireAuth && !user) {
+        console.log('Redirecting to login - no user');
         navigate("/login");
         return;
       }
 
       if (requiredRole && !hasRole(requiredRole)) {
+        console.log('Redirecting to profile - missing role:', requiredRole);
         navigate("/profile");
       }
     }
-  }, [user, requiredRole, hasRole, authLoading, roleLoading, navigate, requireAuth]);
+  }, [user, requiredRole, hasRole, authLoading, roleLoading, navigate, requireAuth, roles]);
 
   if (authLoading || roleLoading) {
     return (
