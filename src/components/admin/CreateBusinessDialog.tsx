@@ -38,7 +38,11 @@ const CreateBusinessDialog = ({ open, onClose, onSuccess }: CreateBusinessDialog
     setLoading(true);
 
     try {
-      // Create user account
+      // Get current user (admin)
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) throw new Error("Not authenticated");
+
+      // Create user account with auto-confirm enabled
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.ownerEmail,
         password: formData.ownerPassword,
@@ -46,19 +50,24 @@ const CreateBusinessDialog = ({ open, onClose, onSuccess }: CreateBusinessDialog
           data: {
             full_name: formData.ownerName,
           },
-          emailRedirectTo: `${window.location.origin}/`,
         },
       });
 
       if (authError) throw authError;
-      if (!authData.user) throw new Error("User creation failed");
+      if (!authData.user) throw new Error("Falha ao criar usuário");
+
+      // Wait a bit for the profile trigger to complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Add business_owner role
       const { error: roleError } = await supabase
         .from("user_roles")
         .insert({ user_id: authData.user.id, role: "business_owner" });
 
-      if (roleError) throw roleError;
+      if (roleError) {
+        console.error("Role error:", roleError);
+        throw new Error("Erro ao adicionar role de proprietário");
+      }
 
       // Create business
       const { error: businessError } = await supabase.from("businesses").insert({
@@ -71,17 +80,35 @@ const CreateBusinessDialog = ({ open, onClose, onSuccess }: CreateBusinessDialog
         email: formData.email,
       });
 
-      if (businessError) throw businessError;
+      if (businessError) {
+        console.error("Business error:", businessError);
+        throw new Error("Erro ao criar negócio: " + businessError.message);
+      }
 
       toast({
         title: "Sucesso!",
-        description: "Negócio criado com sucesso",
+        description: "Negócio e proprietário criados com sucesso",
       });
+      
+      setFormData({
+        ownerEmail: "",
+        ownerPassword: "",
+        ownerName: "",
+        businessName: "",
+        category: "",
+        description: "",
+        address: "",
+        phone: "",
+        email: "",
+      });
+      
       onSuccess();
+      onClose();
     } catch (error: any) {
+      console.error("Create business error:", error);
       toast({
         title: "Erro",
-        description: error.message,
+        description: error.message || "Erro ao criar negócio",
         variant: "destructive",
       });
     } finally {
