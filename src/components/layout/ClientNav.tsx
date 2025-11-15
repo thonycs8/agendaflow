@@ -1,15 +1,51 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Calendar, Menu, Home, User, LogOut, Briefcase, Users, CalendarCheck, Crown } from "lucide-react";
-import { useState } from "react";
+import { Calendar, Menu, Home, User, LogOut, Briefcase, Users, CalendarCheck, Crown, Building2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
+import { useUserRole } from "@/hooks/use-user-role";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const ClientNav = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { isAdmin } = useUserRole();
   const location = useLocation();
+  const [business, setBusiness] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchBusiness = async () => {
+      if (!user || isAdmin) return;
+
+      // Try to get business from professional
+      const { data: professional } = await supabase
+        .from("professionals")
+        .select("business_id, businesses(id, name, logo_url)")
+        .eq("user_id", user.id)
+        .single();
+
+      if (professional?.businesses) {
+        setBusiness(professional.businesses);
+        return;
+      }
+
+      // Try to get business from owner
+      const { data: ownedBusiness } = await supabase
+        .from("businesses")
+        .select("id, name, logo_url")
+        .eq("owner_id", user.id)
+        .single();
+
+      if (ownedBusiness) {
+        setBusiness(ownedBusiness);
+      }
+    };
+
+    fetchBusiness();
+  }, [user, isAdmin]);
 
   const handleSignOut = async () => {
     try {
@@ -77,16 +113,40 @@ export const ClientNav = () => {
     </>
   );
 
+  const showAgendaFlow = isAdmin || !business;
+
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/home" className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-primary">
-            <Calendar className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Agenda Flow
-          </span>
+          {showAgendaFlow ? (
+            <>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-primary">
+                <Calendar className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Agenda Flow
+              </span>
+            </>
+          ) : (
+            <>
+              {business?.logo_url ? (
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={business.logo_url} />
+                  <AvatarFallback>
+                    <Building2 className="h-6 w-6" />
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+                  <Building2 className="h-6 w-6 text-primary-foreground" />
+                </div>
+              )}
+              <span className="text-xl font-bold text-foreground">
+                {business?.name}
+              </span>
+            </>
+          )}
         </Link>
 
         {/* Desktop Navigation */}
