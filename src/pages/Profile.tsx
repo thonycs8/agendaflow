@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Mail, Phone, Calendar, Star } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -168,7 +169,7 @@ const Profile = () => {
                 Gerencie seu negócio completo no painel administrativo.
               </p>
               <Button asChild>
-                <a href="/business">Ir para Dashboard</a>
+                <Link to="/business">Ir para Dashboard</Link>
               </Button>
             </CardContent>
           </Card>

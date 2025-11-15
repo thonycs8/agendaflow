@@ -137,9 +137,7 @@ const App = () => (
               path="/business"
               element={
                 <ProtectedRoute requiredRole="business_owner">
-                  <OwnerLayout>
-                    <BusinessDashboard />
-                  </OwnerLayout>
+                  <BusinessDashboard />
                 </ProtectedRoute>
               }
             />
