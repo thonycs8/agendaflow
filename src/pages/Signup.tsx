@@ -1,10 +1,13 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -14,11 +17,74 @@ const Signup = () => {
     businessName: "",
     userType: "business", // business or client
   });
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Registration logic will be implemented with Lovable Cloud
-    console.log("Signup attempt:", formData);
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: formData.name,
+            user_type: formData.userType,
+            business_name: formData.businessName,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        // Add business_owner role if user type is business
+        if (formData.userType === "business") {
+          const { error: roleError } = await supabase
+            .from("user_roles")
+            .insert({ user_id: data.user.id, role: "business_owner" });
+
+          if (roleError) console.error("Error adding role:", roleError);
+
+          // Create business if business name provided
+          if (formData.businessName) {
+            const { error: businessError } = await supabase
+              .from("businesses")
+              .insert({
+                name: formData.businessName,
+                owner_id: data.user.id,
+              });
+
+            if (businessError) console.error("Error creating business:", businessError);
+          }
+        }
+
+        toast({
+          title: "Conta criada com sucesso!",
+          description: "Você já pode fazer login.",
+        });
+        navigate("/login");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro ao criar conta",
+        description: error.message || "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -114,8 +180,8 @@ const Signup = () => {
               <p className="text-xs text-muted-foreground">Mínimo 8 caracteres</p>
             </div>
 
-            <Button type="submit" className="w-full" variant="hero" size="lg">
-              Criar conta grátis
+            <Button type="submit" className="w-full" variant="hero" size="lg" disabled={loading}>
+              {loading ? "Criando conta..." : "Criar conta grátis"}
             </Button>
           </form>
 

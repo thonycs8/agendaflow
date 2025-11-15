@@ -6,12 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -21,6 +24,7 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -28,8 +32,16 @@ const Login = () => {
     });
 
     if (error) {
-      console.error("Login error:", error.message);
+      toast({
+        title: "Erro ao fazer login",
+        description: error.message === "Invalid login credentials" 
+          ? "Email ou senha incorretos." 
+          : error.message,
+        variant: "destructive",
+      });
     }
+    
+    setLoading(false);
   };
 
   return (
@@ -80,8 +92,8 @@ const Login = () => {
               />
             </div>
 
-            <Button type="submit" className="w-full" variant="hero" size="lg">
-              Entrar
+            <Button type="submit" className="w-full" variant="hero" size="lg" disabled={loading}>
+              {loading ? "Entrando..." : "Entrar"}
             </Button>
           </form>
 
