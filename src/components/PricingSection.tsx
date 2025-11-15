@@ -17,7 +17,7 @@ const plans = [
     ],
   },
   {
-    name: "Professional",
+    name: "Business",
     price: "4,99",
     description: "Para pequenas equipas",
     professionals: "Até 2 profissionais",
@@ -31,12 +31,12 @@ const plans = [
     ],
   },
   {
-    name: "Business",
+    name: "Premium",
     price: "9,99",
     description: "Para negócios em crescimento",
     professionals: "Até 5 profissionais",
     features: [
-      "Tudo do Professional",
+      "Tudo do Business",
       "5 perfis profissionais",
       "Relatórios avançados",
       "Pagamentos online",
