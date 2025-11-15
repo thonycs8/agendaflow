@@ -20,16 +20,6 @@ const Home = () => {
       return;
     }
 
-    if (isAdmin) {
-      navigate("/admin");
-      return;
-    }
-
-    if (isBusinessOwner) {
-      navigate("/business");
-      return;
-    }
-
     const fetchProfile = async () => {
       const { data } = await supabase
         .from("profiles")
@@ -43,7 +33,7 @@ const Home = () => {
     };
 
     fetchProfile();
-  }, [user, navigate, isAdmin, isBusinessOwner]);
+  }, [user, navigate]);
 
   return (
     <AppLayout title="Início">
