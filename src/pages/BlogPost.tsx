@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { useParams, Link } from "react-router-dom";
 import { Calendar, Clock, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import DOMPurify from "dompurify";
 
 const blogContent: Record<string, any> = {
   "caso-sucesso-barbearia-porto": {
@@ -158,7 +159,14 @@ const BlogPost = () => {
         <section className="py-16">
           <div className="container">
             <article className="max-w-4xl mx-auto prose prose-lg prose-headings:font-bold prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-p:text-muted-foreground prose-p:leading-relaxed prose-ul:text-muted-foreground prose-li:my-2 prose-strong:text-foreground prose-blockquote:border-l-primary prose-blockquote:bg-muted/30 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:not-italic">
-              <div dangerouslySetInnerHTML={{ __html: post.content }} />
+              <div dangerouslySetInnerHTML={{ 
+                __html: DOMPurify.sanitize(post.content, {
+                  ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                                 'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'code', 'pre', 'cite'],
+                  ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class'],
+                  ALLOW_DATA_ATTR: false
+                })
+              }} />
             </article>
           </div>
         </section>
