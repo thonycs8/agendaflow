@@ -55,8 +55,8 @@ export const UniversalNav = () => {
       );
     }
 
-    if (!isAdmin && !isBusinessOwner && !isProfessional) {
-      // Client links
+    if (user && !isAdmin && !isBusinessOwner && !isProfessional) {
+      // Client links - only for authenticated clients
       links.push(
         { to: "/agendar", label: "Agendar Serviço", icon: Calendar, show: true },
         { to: "/agenda", label: "Minha Agenda", icon: Calendar, show: true }
