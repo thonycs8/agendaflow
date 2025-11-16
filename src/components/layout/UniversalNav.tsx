@@ -3,18 +3,25 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
-import { useUserRole } from "@/hooks/use-user-role";
+import { useUserRole, UserRole } from "@/hooks/use-user-role";
 import { Menu, Home, LogOut, Settings, Calendar, Users, Briefcase, BarChart3, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { AdminRoleSwitcher } from "./AdminRoleSwitcher";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const UniversalNav = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const { isAdmin, isBusinessOwner, isProfessional, loading, actualIsAdmin, roleOverride } = useUserRole();
+  const { isAdmin, isBusinessOwner, isProfessional, loading, actualIsAdmin, roleOverride, setAdminRoleOverride } = useUserRole();
   const location = useLocation();
 
   const handleSignOut = async () => {
@@ -66,18 +73,63 @@ export const UniversalNav = () => {
     return links.filter(link => link.show);
   };
 
+  const handleRoleSwitch = (role: UserRole | null) => {
+    setAdminRoleOverride(role);
+    toast.success(`Visualizando como ${role === "business_owner" ? "Proprietário" : role === "professional" ? "Profissional" : role === "client" ? "Cliente" : "Admin"}`);
+    window.location.reload();
+  };
+
   const getUserBadge = () => {
-    if (roleOverride) {
-      // Show which role is being overridden
-      if (roleOverride === "business_owner") return <Badge variant="default">PROPRIETÁRIO (teste)</Badge>;
-      if (roleOverride === "professional") return <Badge variant="secondary">PROFISSIONAL (teste)</Badge>;
-      if (roleOverride === "client") return <Badge variant="outline">CLIENTE (teste)</Badge>;
+    if (!actualIsAdmin) {
+      // Non-admin users see their actual role
+      if (isAdmin) return <Badge variant="destructive">ADMIN</Badge>;
+      if (isBusinessOwner) return <Badge variant="default">PROPRIETÁRIO</Badge>;
+      if (isProfessional) return <Badge variant="secondary">PROFISSIONAL</Badge>;
+      return <Badge variant="outline">CLIENTE</Badge>;
     }
-    
-    if (isAdmin) return <Badge variant="destructive">ADMIN</Badge>;
-    if (isBusinessOwner) return <Badge variant="default">PROPRIETÁRIO</Badge>;
-    if (isProfessional) return <Badge variant="secondary">PROFISSIONAL</Badge>;
-    return <Badge variant="outline">CLIENTE</Badge>;
+
+    // Admin users see a dropdown to switch roles
+    const currentRoleLabel = roleOverride 
+      ? roleOverride === "business_owner" ? "PROPRIETÁRIO (teste)" 
+        : roleOverride === "professional" ? "PROFISSIONAL (teste)"
+        : roleOverride === "client" ? "CLIENTE (teste)"
+        : "ADMIN"
+      : "ADMIN";
+
+    const currentVariant = roleOverride
+      ? roleOverride === "business_owner" ? "default"
+        : roleOverride === "professional" ? "secondary"
+        : roleOverride === "client" ? "outline"
+        : "destructive"
+      : "destructive";
+
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Badge variant={currentVariant} className="cursor-pointer hover:opacity-80">
+            {currentRoleLabel} ▾
+          </Badge>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuItem onClick={() => handleRoleSwitch(null)}>
+            <Shield className="mr-2 h-4 w-4" />
+            Admin (padrão)
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleRoleSwitch("business_owner")}>
+            <Briefcase className="mr-2 h-4 w-4" />
+            Proprietário
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleRoleSwitch("professional")}>
+            <Users className="mr-2 h-4 w-4" />
+            Profissional
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleRoleSwitch("client")}>
+            <Calendar className="mr-2 h-4 w-4" />
+            Cliente
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
   };
 
   const navLinks = getNavLinks();
@@ -128,8 +180,6 @@ export const UniversalNav = () => {
         <div className="flex items-center gap-2">
           {user ? (
             <>
-              {actualIsAdmin && <AdminRoleSwitcher />}
-              
               <Link to="/profile" className="hidden sm:inline-flex">
                 <Button variant="ghost" size="sm">
                   <Avatar className="h-6 w-6 mr-2">
@@ -176,12 +226,6 @@ export const UniversalNav = () => {
                 </nav>
                 {user && (
                   <div className="flex flex-col gap-2 pt-4 border-t">
-                    {actualIsAdmin && (
-                      <div className="px-2 mb-2">
-                        <AdminRoleSwitcher />
-                      </div>
-                    )}
-                    
                     <Link to="/profile" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start">
                         <Avatar className="h-6 w-6 mr-2">
