@@ -1,5 +1,5 @@
-import { Calendar, User, LogOut, Settings, LayoutDashboard, Building2 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Calendar, Building2, LayoutDashboard, User, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,32 +13,34 @@ import { useAuth } from "@/hooks/use-auth";
 import { useUserRole } from "@/hooks/use-user-role";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminRoleMenu } from "@/components/AdminRoleMenu";
 
-export const GlobalNav = () => {
+export const UnifiedNavbar = () => {
   const { user, signOut } = useAuth();
-  const { isAdmin, isBusinessOwner, isProfessional, isClient } = useUserRole();
+  const { isAdmin, isBusinessOwner, isProfessional, isClient, actualIsAdmin } = useUserRole();
+  const [profile, setProfile] = useState(null);
+  const [business, setBusiness] = useState(null);
+
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<any>(null);
-  const [business, setBusiness] = useState<any>(null);
+  const location = useLocation();
+
+  const isPublicPage = !user;
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-      if (data) setProfile(data);
-    };
-    fetchProfile();
+    if (!user) return;
+
+    supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single()
+      .then(({ data }) => setProfile(data));
   }, [user]);
 
   useEffect(() => {
-    const fetchBusiness = async () => {
-      if (!user || isAdmin) return;
+    if (!user || isAdmin) return;
 
-      // Try to get business from professional
+    const loadBusiness = async () => {
       const { data: professional } = await supabase
         .from("professionals")
         .select("business_id, businesses(id, name, logo_url)")
@@ -50,22 +52,17 @@ export const GlobalNav = () => {
         return;
       }
 
-      // Try to get business from owner
-      const { data: ownedBusiness } = await supabase
-        .from("businesses")
-        .select("id, name, logo_url")
-        .eq("owner_id", user.id)
-        .single();
+      const { data: ownerBusiness } = await supabase.from("businesses").select("*").eq("owner_id", user.id).single();
 
-      if (ownedBusiness) {
-        setBusiness(ownedBusiness);
+      if (ownerBusiness) {
+        setBusiness(ownerBusiness);
       }
     };
 
-    fetchBusiness();
+    loadBusiness();
   }, [user, isAdmin]);
 
-  const handleSignOut = async () => {
+  const handleLogout = async () => {
     await signOut();
     navigate("/login");
   };
@@ -73,15 +70,16 @@ export const GlobalNav = () => {
   const showAgendaFlow = isAdmin || !business;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between gap-4">
-        <Link to="/home" className="flex items-center gap-2">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
+      <div className="container flex h-16 items-center justify-between">
+        {/* LOGO */}
+        <Link to={user ? "/home" : "/"} className="flex items-center gap-2">
           {showAgendaFlow ? (
             <>
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-primary">
+              <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-gradient-primary">
                 <Calendar className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent hidden sm:inline">
+              <span className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent hidden sm:block">
                 Agenda Flow
               </span>
             </>
@@ -95,123 +93,83 @@ export const GlobalNav = () => {
                   </AvatarFallback>
                 </Avatar>
               ) : (
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+                <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-primary">
                   <Building2 className="h-5 w-5 text-primary-foreground" />
                 </div>
               )}
-              <span className="text-lg font-bold text-foreground hidden sm:inline">
-                {business?.name}
-              </span>
+              <span className="text-lg font-bold hidden sm:block">{business?.name}</span>
             </>
           )}
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6">
+        {/* LINKS */}
+        <nav className="hidden md:flex gap-6">
+          {isPublicPage && (
+            <>
+              <a href="#funcionalidades">Funcionalidades</a>
+              <a href="#precos">Preços</a>
+              <Link to="/blog">Blog</Link>
+              <Link to="/contacto">Contacto</Link>
+            </>
+          )}
+
           {isClient && (
             <>
-              <Link to="/home" className="text-sm font-medium hover:text-primary transition-colors">
-                Início
-              </Link>
-              <Link to="/servicos" className="text-sm font-medium hover:text-primary transition-colors">
-                Serviços
-              </Link>
-              <Link to="/profissionais" className="text-sm font-medium hover:text-primary transition-colors">
-                Profissionais
-              </Link>
-              <Link to="/agenda" className="text-sm font-medium hover:text-primary transition-colors">
-                Minha Agenda
-              </Link>
+              <Link to="/home">Início</Link>
+              <Link to="/servicos">Serviços</Link>
+              <Link to="/profissionais">Profissionais</Link>
+              <Link to="/agenda">Minha Agenda</Link>
             </>
           )}
 
           {isProfessional && (
             <>
-              <Link to="/home" className="text-sm font-medium hover:text-primary transition-colors">
-                Início
-              </Link>
-              <Link to="/agenda" className="text-sm font-medium hover:text-primary transition-colors">
-                Agenda
-              </Link>
+              <Link to="/home">Início</Link>
+              <Link to="/agenda">Agenda</Link>
             </>
           )}
 
-          {isBusinessOwner && (
-            <Link to="/business" className="text-sm font-medium hover:text-primary transition-colors">
-              <Building2 className="h-4 w-4 inline mr-1" />
-              Meu Negócio
-            </Link>
-          )}
-
-          {isAdmin && (
-            <Link to="/admin" className="text-sm font-medium hover:text-primary transition-colors">
-              <LayoutDashboard className="h-4 w-4 inline mr-1" />
-              Admin
-            </Link>
-          )}
+          {isBusinessOwner && <Link to="/business">Meu Negócio</Link>}
+          {isAdmin && <Link to="/admin">Admin</Link>}
         </nav>
 
-        <div className="flex items-center gap-2">
+        {/* USER MENU */}
+        {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                <Avatar className="h-9 w-9">
+              <Button variant="ghost" className="h-9 w-9 rounded-full p-0">
+                <Avatar>
                   <AvatarImage src={profile?.avatar_url} />
-                  <AvatarFallback>
-                    {profile?.full_name?.charAt(0) || user?.email?.charAt(0) || "U"}
-                  </AvatarFallback>
+                  <AvatarFallback>{profile?.full_name?.charAt(0) || user?.email?.charAt(0)}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <div className="flex items-center gap-2 p-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={profile?.avatar_url} />
-                  <AvatarFallback>
-                    {profile?.full_name?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">{profile?.full_name || "Usuário"}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email}</p>
-                </div>
-              </div>
-              <DropdownMenuSeparator />
+
+            <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link to="/profile" className="cursor-pointer">
-                  <User className="mr-2 h-4 w-4" />
-                  Perfil
+                <Link to="/profile">
+                  <User className="h-4 w-4 mr-2" /> Perfil
                 </Link>
               </DropdownMenuItem>
-              {isBusinessOwner && (
-                <DropdownMenuItem asChild>
-                  <Link to="/business" className="cursor-pointer">
-                    <Building2 className="mr-2 h-4 w-4" />
-                    Meu Negócio
-                  </Link>
-                </DropdownMenuItem>
-              )}
-              {isAdmin && (
-                <DropdownMenuItem asChild>
-                  <Link to="/admin" className="cursor-pointer">
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Admin Dashboard
-                  </Link>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem asChild>
-                <Link to="/settings" className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Configurações
-                </Link>
-              </DropdownMenuItem>
+
+              {actualIsAdmin && <AdminRoleMenu />}
+
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                Sair
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                <LogOut className="h-4 w-4 mr-2" /> Sair
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
+        ) : (
+          <div className="hidden md:flex gap-3">
+            <Button variant="ghost" asChild>
+              <Link to="/login">Entrar</Link>
+            </Button>
+            <Button variant="hero" asChild>
+              <Link to="/signup">Criar Conta</Link>
+            </Button>
+          </div>
+        )}
       </div>
     </header>
   );
