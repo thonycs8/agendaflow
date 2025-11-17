@@ -20,18 +20,20 @@ import FAQ from "./pages/FAQ";
 import Reembolso from "./pages/Reembolso";
 import Contacto from "./pages/Contacto";
 import BusinessPublic from "./pages/BusinessPublic";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
+
+// Protected shared pages
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
 import Servicos from "./pages/Servicos";
 import Profissionais from "./pages/Profissionais";
 import Agenda from "./pages/Agenda";
 import Assinaturas from "./pages/Assinaturas";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
 import Agendar from "./pages/Agendar";
 
-// Protected pages
+// General Dashboard
 import Dashboard from "./pages/Dashboard";
-import Home from "./pages/Home";
-import Profile from "./pages/Profile";
 
 // Admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -56,18 +58,36 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const location = useLocation();
-  const publicRoutes = ["/", "/login", "/signup", "/blog", "/developer", "/gdpr", "/privacidade", "/termos", "/faq", "/reembolso", "/contacto"];
-  const isPublicRoute = publicRoutes.some(route => location.pathname === route || location.pathname.startsWith("/blog/") || location.pathname.startsWith("/negocio/"));
+
+  // Rotas públicas centralizadas
+  const PUBLIC_PREFIXES = ["/blog/", "/negocio/"];
+  const PUBLIC_ROUTES = [
+    "/",
+    "/login",
+    "/signup",
+    "/blog",
+    "/developer",
+    "/gdpr",
+    "/privacidade",
+    "/termos",
+    "/faq",
+    "/reembolso",
+    "/contacto",
+  ];
+
+  const isPublicRoute =
+    PUBLIC_ROUTES.includes(location.pathname) || PUBLIC_PREFIXES.some((prefix) => location.pathname.startsWith(prefix));
 
   if (isPublicRoute) {
     return (
       <Routes>
-        {/* Public Routes */}
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
+
         <Route path="/developer" element={<Developer />} />
         <Route path="/gdpr" element={<GDPR />} />
         <Route path="/privacidade" element={<Privacidade />} />
@@ -75,7 +95,9 @@ const AppContent = () => {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/reembolso" element={<Reembolso />} />
         <Route path="/contacto" element={<Contacto />} />
+
         <Route path="/negocio/:slug" element={<BusinessPublic />} />
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     );
@@ -84,7 +106,7 @@ const AppContent = () => {
   return (
     <AppLayout>
       <Routes>
-        {/* Protected Routes - Redirect based on role */}
+        {/* Base Protected */}
         <Route
           path="/dashboard"
           element={
@@ -94,7 +116,6 @@ const AppContent = () => {
           }
         />
 
-        {/* Protected Routes - Authenticated Users */}
         <Route
           path="/home"
           element={
@@ -103,6 +124,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/profile"
           element={
@@ -111,6 +133,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/servicos"
           element={
@@ -119,6 +142,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/profissionais"
           element={
@@ -127,6 +151,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/agenda"
           element={
@@ -135,6 +160,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/agendar"
           element={
@@ -143,6 +169,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/assinaturas"
           element={
@@ -152,7 +179,7 @@ const AppContent = () => {
           }
         />
 
-        {/* Admin Routes */}
+        {/* Admin */}
         <Route
           path="/admin"
           element={
@@ -170,7 +197,7 @@ const AppContent = () => {
           }
         />
 
-        {/* Business Owner Routes */}
+        {/* Business Owner */}
         <Route
           path="/business"
           element={
@@ -179,6 +206,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/business/agenda"
           element={
@@ -187,6 +215,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/business/clientes"
           element={
@@ -195,6 +224,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/business/profissionais"
           element={
@@ -203,6 +233,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/business/servicos"
           element={
@@ -211,6 +242,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/business/financeiro"
           element={
@@ -219,6 +251,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/business/assinaturas"
           element={
@@ -227,6 +260,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/business/analytics"
           element={
@@ -235,6 +269,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/business/configuracoes"
           element={
@@ -244,7 +279,7 @@ const AppContent = () => {
           }
         />
 
-        {/* Professional Routes */}
+        {/* Professional */}
         <Route
           path="/professional"
           element={
@@ -253,6 +288,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/professional/services"
           element={
@@ -261,6 +297,7 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/professional/clientes"
           element={
@@ -270,7 +307,7 @@ const AppContent = () => {
           }
         />
 
-        {/* Client Routes */}
+        {/* Client */}
         <Route
           path="/client"
           element={
@@ -280,7 +317,7 @@ const AppContent = () => {
           }
         />
 
-        {/* 404 - ADD ALL CUSTOM ROUTES ABOVE THIS */}
+        {/* Catch-all */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AppLayout>
