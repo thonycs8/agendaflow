@@ -3,7 +3,6 @@ import { useUserRole } from "@/hooks/use-user-role";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ProfessionalLayout } from "@/components/layout/ProfessionalLayout";
 import BusinessServices from "@/components/business/BusinessServices";
 
 const ProfessionalServices = () => {
@@ -14,7 +13,7 @@ const ProfessionalServices = () => {
 
   useEffect(() => {
     if (!loading && !isProfessional) {
-      navigate("/login");
+      navigate("/dashboard");
     }
   }, [isProfessional, loading, navigate]);
 
@@ -22,14 +21,14 @@ const ProfessionalServices = () => {
     const fetchProfessionalBusiness = async () => {
       if (!user) return;
 
-      const { data } = await supabase
+      const { data: professional } = await supabase
         .from("professionals")
         .select("business_id")
         .eq("user_id", user.id)
         .single();
 
-      if (data) {
-        setBusinessId(data.business_id);
+      if (professional) {
+        setBusinessId(professional.business_id);
       }
     };
 
@@ -41,18 +40,16 @@ const ProfessionalServices = () => {
   if (loading || !businessId) return null;
 
   return (
-    <ProfessionalLayout title="Meus Serviços">
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Gestão de Serviços</h2>
-          <p className="text-muted-foreground">
-            Gerir os serviços que você oferece no estabelecimento
-          </p>
-        </div>
-        
-        <BusinessServices businessId={businessId} />
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold mb-2">Gestão de Serviços</h2>
+        <p className="text-muted-foreground">
+          Gerir os serviços que você oferece no estabelecimento
+        </p>
       </div>
-    </ProfessionalLayout>
+      
+      <BusinessServices businessId={businessId} />
+    </div>
   );
 };
 

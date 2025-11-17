@@ -5,8 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { OwnerLayout } from "@/components/layout/OwnerLayout";
-import { UniversalNav } from "@/components/layout/UniversalNav";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 // Public pages
 import Index from "./pages/Index";
@@ -36,9 +35,15 @@ import Profile from "./pages/Profile";
 
 // Admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 // Business Owner
 import BusinessDashboard from "./pages/business/BusinessDashboard";
+import BusinessSettings from "./pages/business/BusinessSettings";
+import AnalyticsDashboard from "./pages/business/AnalyticsDashboard";
+import ClientsManagement from "./pages/business/ClientsManagement";
+import FinancialManagement from "./pages/business/FinancialManagement";
+import MembershipPlans from "./pages/business/MembershipPlans";
 
 // Professional
 import ProfessionalDashboard from "./pages/professional/ProfessionalDashboard";
@@ -51,149 +56,236 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const location = useLocation();
-  const showUniversalNav = location.pathname !== "/";
+  const publicRoutes = ["/", "/login", "/signup", "/blog", "/developer", "/gdpr", "/privacidade", "/termos", "/faq", "/reembolso", "/contacto"];
+  const isPublicRoute = publicRoutes.some(route => location.pathname === route || location.pathname.startsWith("/blog/") || location.pathname.startsWith("/negocio/"));
+
+  if (isPublicRoute) {
+    return (
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
+        <Route path="/developer" element={<Developer />} />
+        <Route path="/gdpr" element={<GDPR />} />
+        <Route path="/privacidade" element={<Privacidade />} />
+        <Route path="/termos" element={<Termos />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/reembolso" element={<Reembolso />} />
+        <Route path="/contacto" element={<Contacto />} />
+        <Route path="/negocio/:slug" element={<BusinessPublic />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    );
+  }
 
   return (
-    <>
-      {showUniversalNav && <UniversalNav />}
+    <AppLayout>
       <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/developer" element={<Developer />} />
-            <Route path="/gdpr" element={<GDPR />} />
-            <Route path="/privacidade" element={<Privacidade />} />
-            <Route path="/termos" element={<Termos />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/reembolso" element={<Reembolso />} />
-            <Route path="/contacto" element={<Contacto />} />
-            <Route path="/negocio/:slug" element={<BusinessPublic />} />
+        {/* Protected Routes - Redirect based on role */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
 
-            {/* Protected Routes - Redirect based on role */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
+        {/* Protected Routes - Authenticated Users */}
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/servicos"
+          element={
+            <ProtectedRoute>
+              <Servicos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profissionais"
+          element={
+            <ProtectedRoute>
+              <Profissionais />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/agenda"
+          element={
+            <ProtectedRoute>
+              <Agenda />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/agendar"
+          element={
+            <ProtectedRoute>
+              <Agendar />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/assinaturas"
+          element={
+            <ProtectedRoute>
+              <Assinaturas />
+            </ProtectedRoute>
+          }
+        />
 
-            {/* Protected Routes - Authenticated Users */}
-            <Route
-              path="/home"
-              element={
-                <ProtectedRoute>
-                  <Home />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/servicos"
-              element={
-                <ProtectedRoute>
-                  <Servicos />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profissionais"
-              element={
-                <ProtectedRoute>
-                  <Profissionais />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/agenda"
-              element={
-                <ProtectedRoute>
-                  <Agenda />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/assinaturas"
-              element={
-                <ProtectedRoute>
-                  <Assinaturas />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/agendar"
-              element={
-                <ProtectedRoute>
-                  <Agendar />
-                </ProtectedRoute>
-              }
-            />
+        {/* Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminSettings />
+            </ProtectedRoute>
+          }
+        />
 
-            {/* Admin Routes */}
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
+        {/* Business Owner Routes */}
+        <Route
+          path="/business"
+          element={
+            <ProtectedRoute requiredRole="business_owner">
+              <BusinessDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/business/agenda"
+          element={
+            <ProtectedRoute requiredRole="business_owner">
+              <Agenda />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/business/clientes"
+          element={
+            <ProtectedRoute requiredRole="business_owner">
+              <ClientsManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/business/profissionais"
+          element={
+            <ProtectedRoute requiredRole="business_owner">
+              <Profissionais />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/business/servicos"
+          element={
+            <ProtectedRoute requiredRole="business_owner">
+              <Servicos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/business/financeiro"
+          element={
+            <ProtectedRoute requiredRole="business_owner">
+              <FinancialManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/business/assinaturas"
+          element={
+            <ProtectedRoute requiredRole="business_owner">
+              <MembershipPlans />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/business/analytics"
+          element={
+            <ProtectedRoute requiredRole="business_owner">
+              <AnalyticsDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/business/configuracoes"
+          element={
+            <ProtectedRoute requiredRole="business_owner">
+              <BusinessSettings />
+            </ProtectedRoute>
+          }
+        />
 
-            {/* Business Owner Routes */}
-            <Route
-              path="/business"
-              element={
-                <ProtectedRoute requiredRole="business_owner">
-                  <BusinessDashboard />
-                </ProtectedRoute>
-              }
-            />
+        {/* Professional Routes */}
+        <Route
+          path="/professional"
+          element={
+            <ProtectedRoute requiredRole="professional">
+              <ProfessionalDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/professional/services"
+          element={
+            <ProtectedRoute requiredRole="professional">
+              <ProfessionalServices />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/professional/clientes"
+          element={
+            <ProtectedRoute requiredRole="professional">
+              <ClientsManagement />
+            </ProtectedRoute>
+          }
+        />
 
-            {/* Professional Routes */}
-            <Route
-              path="/professional"
-              element={
-                <ProtectedRoute requiredRole="professional">
-                  <ProfessionalDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/professional/servicos"
-              element={
-                <ProtectedRoute requiredRole="professional">
-                  <ProfessionalServices />
-                </ProtectedRoute>
-              }
-            />
+        {/* Client Routes */}
+        <Route
+          path="/client"
+          element={
+            <ProtectedRoute requiredRole="client">
+              <ClientDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-            {/* Client Routes */}
-            <Route
-              path="/client"
-              element={
-                <ProtectedRoute requiredRole="client">
-                  <ClientDashboard />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* 404 - ADD ALL CUSTOM ROUTES ABOVE THIS */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </>
-      );
-    };
+        {/* 404 - ADD ALL CUSTOM ROUTES ABOVE THIS */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </AppLayout>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
