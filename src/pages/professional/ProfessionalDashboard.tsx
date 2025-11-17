@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Briefcase, TrendingUp, DollarSign } from "lucide-react";
-import { ProfessionalLayout } from "@/components/layout/ProfessionalLayout";
 import { ProfessionalClients } from "@/components/professional/ProfessionalClients";
 
 const ProfessionalDashboard = () => {
@@ -16,14 +15,14 @@ const ProfessionalDashboard = () => {
   const [professional, setProfessional] = useState<any>(null);
   const [stats, setStats] = useState({
     totalAppointments: 0,
-    totalServices: 0,
-    avgRating: 0,
-    monthlyRevenue: 0,
+    completedAppointments: 0,
+    revenue: 0,
+    clientsCount: 0,
   });
 
   useEffect(() => {
     if (!loading && !isProfessional) {
-      navigate("/login");
+      navigate("/dashboard");
     }
   }, [isProfessional, loading, navigate]);
 
@@ -31,39 +30,47 @@ const ProfessionalDashboard = () => {
     const fetchProfessionalData = async () => {
       if (!user) return;
 
-      const { data: professionalData } = await supabase
+      const { data: profData } = await supabase
         .from("professionals")
-        .select("*, businesses(name, logo_url)")
+        .select("*, businesses(name)")
         .eq("user_id", user.id)
         .single();
 
-      if (professionalData) {
-        setProfessional(professionalData);
+      if (profData) {
+        setProfessional(profData);
 
-        const [appointmentsRes, servicesRes, transactionsRes] = await Promise.all([
-          supabase
-            .from("appointments")
-            .select("id", { count: "exact", head: true })
-            .eq("professional_id", professionalData.id),
-          supabase
-            .from("services")
-            .select("id", { count: "exact", head: true })
-            .eq("created_by_id", user.id),
-          supabase
-            .from("financial_transactions")
-            .select("amount")
-            .eq("professional_id", professionalData.id)
-            .eq("type", "income")
-            .gte("transaction_date", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
-        ]);
+        const { count: appointmentsCount } = await supabase
+          .from("appointments")
+          .select("*", { count: "exact", head: true })
+          .eq("professional_id", profData.id);
 
-        const monthlyRevenue = transactionsRes.data?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+        const { count: completedCount } = await supabase
+          .from("appointments")
+          .select("*", { count: "exact", head: true })
+          .eq("professional_id", profData.id)
+          .eq("status", "completed");
+
+        const { data: revenueData } = await supabase
+          .from("appointments")
+          .select("payment_amount")
+          .eq("professional_id", profData.id)
+          .eq("payment_status", "paid");
+
+        const totalRevenue = revenueData?.reduce(
+          (sum, app) => sum + (app.payment_amount || 0),
+          0
+        ) || 0;
+
+        const { count: clientsCount } = await supabase
+          .from("professional_clients")
+          .select("*", { count: "exact", head: true })
+          .eq("professional_id", profData.id);
 
         setStats({
-          totalAppointments: appointmentsRes.count || 0,
-          totalServices: servicesRes.count || 0,
-          avgRating: professionalData.rating || 0,
-          monthlyRevenue,
+          totalAppointments: appointmentsCount || 0,
+          completedAppointments: completedCount || 0,
+          revenue: totalRevenue,
+          clientsCount: clientsCount || 0,
         });
       }
     };
@@ -76,102 +83,80 @@ const ProfessionalDashboard = () => {
   if (loading || !professional) return null;
 
   return (
-    <ProfessionalLayout title="Dashboard">
-      <div className="space-y-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold">{professional.name}</h2>
-          <p className="text-muted-foreground">
-            {professional.businesses?.name || "Profissional"}
-          </p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Agendamentos</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalAppointments}</div>
-              <p className="text-xs text-muted-foreground">Total de atendimentos</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Serviços</CardTitle>
-              <Briefcase className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalServices}</div>
-              <p className="text-xs text-muted-foreground">Serviços cadastrados</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avaliação</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.avgRating.toFixed(1)}</div>
-              <p className="text-xs text-muted-foreground">Média de estrelas</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Receita</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                €{stats.monthlyRevenue.toFixed(2)}
-              </div>
-              <p className="text-xs text-muted-foreground">Neste mês</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Tabs defaultValue="clients" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="clients">Meus Clientes</TabsTrigger>
-            <TabsTrigger value="appointments">Agendamentos</TabsTrigger>
-            <TabsTrigger value="promotions">Promoções</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="clients">
-            <ProfessionalClients />
-          </TabsContent>
-          
-          <TabsContent value="appointments">
-            <Card>
-              <CardHeader>
-                <CardTitle>Seus Agendamentos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Funcionalidade de agendamentos em desenvolvimento
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="promotions">
-            <Card>
-              <CardHeader>
-                <CardTitle>Suas Promoções</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Funcionalidade de promoções em desenvolvimento
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+    <div className="space-y-6">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold">{professional.name}</h2>
+        <p className="text-muted-foreground">
+          {professional.businesses?.name || "Profissional"}
+        </p>
       </div>
-    </ProfessionalLayout>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Agendamentos</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalAppointments}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Concluídos</CardTitle>
+            <Briefcase className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.completedAppointments}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Receita</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">€{stats.revenue.toFixed(2)}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Clientes</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.clientsCount}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="clients" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="clients">Clientes</TabsTrigger>
+          <TabsTrigger value="promotions">Promoções</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="clients" className="space-y-4">
+          <ProfessionalClients professionalId={professional.id} />
+        </TabsContent>
+
+        <TabsContent value="promotions" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Promoções</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Funcionalidade de promoções em desenvolvimento
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
