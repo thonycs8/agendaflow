@@ -140,7 +140,7 @@ const ProfessionalDashboard = () => {
         </TabsList>
 
         <TabsContent value="clients" className="space-y-4">
-          <ProfessionalClients professionalId={professional.id} />
+          <ProfessionalClients />
         </TabsContent>
 
         <TabsContent value="promotions" className="space-y-4">
