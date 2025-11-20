@@ -1,0 +1,452 @@
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { pt } from "date-fns/locale";
+import { ArrowLeft, ArrowRight, Clock, Euro } from "lucide-react";
+
+interface BookingFlowProps {
+  businessId: string;
+}
+
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  duration_minutes: number;
+}
+
+interface Professional {
+  id: string;
+  name: string;
+  avatar_url: string;
+  bio: string;
+  rating: number;
+}
+
+export const BookingFlow = ({ businessId }: BookingFlowProps) => {
+  const { user } = useAuth();
+  const [step, setStep] = useState(1);
+  const [services, setServices] = useState<Service[]>([]);
+  const [professionals, setProfessionals] = useState<Professional[]>([]);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Client info for guest booking
+  const [clientName, setClientName] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
+
+  useEffect(() => {
+    fetchServices();
+  }, [businessId]);
+
+  useEffect(() => {
+    if (selectedService) {
+      fetchProfessionals();
+    }
+  }, [selectedService]);
+
+  useEffect(() => {
+    if (selectedDate && selectedProfessional) {
+      generateAvailableTimes();
+    }
+  }, [selectedDate, selectedProfessional]);
+
+  const fetchServices = async () => {
+    const { data } = await supabase
+      .from("services")
+      .select("*")
+      .eq("business_id", businessId)
+      .eq("is_active", true)
+      .order("name");
+
+    if (data) setServices(data);
+  };
+
+  const fetchProfessionals = async () => {
+    const { data } = await supabase
+      .from("professionals")
+      .select("*")
+      .eq("business_id", businessId)
+      .eq("is_active", true)
+      .order("name");
+
+    if (data) setProfessionals(data);
+  };
+
+  const generateAvailableTimes = () => {
+    const times: string[] = [];
+    for (let hour = 9; hour <= 18; hour++) {
+      times.push(`${hour.toString().padStart(2, "0")}:00`);
+      times.push(`${hour.toString().padStart(2, "0")}:30`);
+    }
+    setAvailableTimes(times);
+  };
+
+  const handleBooking = async () => {
+    if (!selectedService || !selectedProfessional || !selectedDate || !selectedTime) {
+      toast.error("Por favor, preencha todos os campos");
+      return;
+    }
+
+    // Validate client info if not logged in
+    if (!user) {
+      if (!clientName) {
+        toast.error("Nome é obrigatório");
+        return;
+      }
+      if (!clientEmail && !clientPhone) {
+        toast.error("E-mail ou telefone é obrigatório");
+        return;
+      }
+    }
+
+    setLoading(true);
+
+    try {
+      let clientId = user?.id;
+
+      // Create guest client if not logged in
+      if (!user) {
+        // Check if client exists by email or phone
+        let existingClient = null;
+        
+        if (clientEmail) {
+          const { data } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("id", (await supabase.auth.signUp({
+              email: clientEmail,
+              password: Math.random().toString(36).slice(-8),
+              options: {
+                data: { full_name: clientName, phone: clientPhone }
+              }
+            })).data?.user?.id || "")
+            .single();
+          existingClient = data;
+        }
+
+        if (!existingClient && clientPhone) {
+          // For phone-only bookings, create a profile without auth
+          const tempEmail = `guest_${Date.now()}@temp.agendaflow.app`;
+          const { data: authData } = await supabase.auth.signUp({
+            email: tempEmail,
+            password: Math.random().toString(36).slice(-8),
+            options: {
+              data: { full_name: clientName, phone: clientPhone }
+            }
+          });
+          clientId = authData?.user?.id;
+        } else if (existingClient) {
+          clientId = existingClient.id;
+        }
+      }
+
+      if (!clientId) {
+        toast.error("Erro ao processar cadastro");
+        setLoading(false);
+        return;
+      }
+
+      // Create appointment
+      const appointmentDateTime = new Date(selectedDate);
+      const [hours, minutes] = selectedTime.split(":");
+      appointmentDateTime.setHours(parseInt(hours), parseInt(minutes));
+
+      const { error } = await supabase.from("appointments").insert({
+        business_id: businessId,
+        professional_id: selectedProfessional.id,
+        client_id: clientId,
+        service_id: selectedService.id,
+        appointment_date: appointmentDateTime.toISOString(),
+        duration_minutes: selectedService.duration_minutes,
+        status: "pending",
+        payment_amount: selectedService.price,
+      });
+
+      if (error) throw error;
+
+      toast.success("Marcação realizada com sucesso! Confirmação enviada por e-mail.");
+      
+      // Reset form
+      setStep(1);
+      setSelectedService(null);
+      setSelectedProfessional(null);
+      setSelectedDate(undefined);
+      setSelectedTime("");
+      setClientName("");
+      setClientEmail("");
+      setClientPhone("");
+    } catch (error: any) {
+      console.error("Booking error:", error);
+      toast.error("Erro ao fazer marcação");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-4xl mx-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle>Agendar Serviço</CardTitle>
+          <div className="flex gap-2 mt-4">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <div
+                key={s}
+                className={`h-2 flex-1 rounded-full ${
+                  s <= step ? "bg-primary" : "bg-muted"
+                }`}
+              />
+            ))}
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          {/* Step 1: Select Service */}
+          {step === 1 && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">Escolha o serviço</h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                {services.map((service) => (
+                  <Card
+                    key={service.id}
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      selectedService?.id === service.id ? "ring-2 ring-primary" : ""
+                    }`}
+                    onClick={() => setSelectedService(service)}
+                  >
+                    <CardContent className="p-4">
+                      <h4 className="font-semibold">{service.name}</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {service.description}
+                      </p>
+                      <div className="flex items-center gap-4 mt-3 text-sm">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          {service.duration_minutes}min
+                        </span>
+                        <span className="flex items-center gap-1 font-semibold">
+                          <Euro className="h-4 w-4" />
+                          {service.price.toFixed(2)}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <Button
+                onClick={() => setStep(2)}
+                disabled={!selectedService}
+                className="w-full"
+              >
+                Próximo <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          {/* Step 2: Select Professional */}
+          {step === 2 && (
+            <div className="space-y-4">
+              <Button
+                variant="ghost"
+                onClick={() => setStep(1)}
+                className="mb-2"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+              </Button>
+              <h3 className="font-semibold text-lg">Escolha o profissional</h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                {professionals.map((prof) => (
+                  <Card
+                    key={prof.id}
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      selectedProfessional?.id === prof.id ? "ring-2 ring-primary" : ""
+                    }`}
+                    onClick={() => setSelectedProfessional(prof)}
+                  >
+                    <CardContent className="p-4 flex items-start gap-3">
+                      <Avatar>
+                        <AvatarImage src={prof.avatar_url} />
+                        <AvatarFallback>{prof.name[0]}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h4 className="font-semibold">{prof.name}</h4>
+                        <p className="text-sm text-muted-foreground">{prof.bio}</p>
+                        {prof.rating > 0 && (
+                          <p className="text-sm mt-1">⭐ {prof.rating.toFixed(1)}</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <Button
+                onClick={() => setStep(3)}
+                disabled={!selectedProfessional}
+                className="w-full"
+              >
+                Próximo <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          {/* Step 3: Select Date */}
+          {step === 3 && (
+            <div className="space-y-4">
+              <Button
+                variant="ghost"
+                onClick={() => setStep(2)}
+                className="mb-2"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+              </Button>
+              <h3 className="font-semibold text-lg">Escolha a data</h3>
+              <div className="flex justify-center">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  disabled={(date) => date < new Date()}
+                  locale={pt}
+                  className="rounded-md border"
+                />
+              </div>
+              <Button
+                onClick={() => setStep(4)}
+                disabled={!selectedDate}
+                className="w-full"
+              >
+                Próximo <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          {/* Step 4: Select Time */}
+          {step === 4 && (
+            <div className="space-y-4">
+              <Button
+                variant="ghost"
+                onClick={() => setStep(3)}
+                className="mb-2"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+              </Button>
+              <h3 className="font-semibold text-lg">Escolha o horário</h3>
+              <div className="grid grid-cols-4 gap-2">
+                {availableTimes.map((time) => (
+                  <Button
+                    key={time}
+                    variant={selectedTime === time ? "default" : "outline"}
+                    onClick={() => setSelectedTime(time)}
+                    className="w-full"
+                  >
+                    {time}
+                  </Button>
+                ))}
+              </div>
+              <Button
+                onClick={() => setStep(5)}
+                disabled={!selectedTime}
+                className="w-full"
+              >
+                Próximo <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          {/* Step 5: Client Info & Confirm */}
+          {step === 5 && (
+            <div className="space-y-4">
+              <Button
+                variant="ghost"
+                onClick={() => setStep(4)}
+                className="mb-2"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+              </Button>
+              <h3 className="font-semibold text-lg">Confirmar marcação</h3>
+
+              <Card>
+                <CardContent className="p-4 space-y-2">
+                  <div><strong>Serviço:</strong> {selectedService?.name}</div>
+                  <div><strong>Profissional:</strong> {selectedProfessional?.name}</div>
+                  <div>
+                    <strong>Data:</strong>{" "}
+                    {selectedDate && format(selectedDate, "dd 'de' MMMM 'de' yyyy", { locale: pt })}
+                  </div>
+                  <div><strong>Horário:</strong> {selectedTime}</div>
+                  <div className="text-lg font-bold pt-2">
+                    Total: €{selectedService?.price.toFixed(2)}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {!user && (
+                <div className="space-y-4 pt-4 border-t">
+                  <h4 className="font-semibold">Seus dados</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="name">Nome *</Label>
+                      <Input
+                        id="name"
+                        value={clientName}
+                        onChange={(e) => setClientName(e.target.value)}
+                        placeholder="Seu nome completo"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email">E-mail</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={clientEmail}
+                        onChange={(e) => setClientEmail(e.target.value)}
+                        placeholder="seu@email.com"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">Telefone</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={clientPhone}
+                        onChange={(e) => setClientPhone(e.target.value)}
+                        placeholder="+351 900 000 000"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      * Nome é obrigatório. E-mail OU telefone também é obrigatório.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <Button
+                onClick={handleBooking}
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? "Processando..." : "Confirmar Marcação"}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};

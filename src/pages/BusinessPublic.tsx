@@ -6,8 +6,9 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Clock, MapPin, Phone, Mail } from "lucide-react";
+import { Star, Clock, MapPin, Phone, Mail, Calendar as CalendarIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BookingFlow } from "@/components/business/BookingFlow";
 
 interface Business {
   id: string;
@@ -55,6 +56,7 @@ const BusinessPublic = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showBooking, setShowBooking] = useState(false);
 
   useEffect(() => {
     const fetchBusinessData = async () => {
