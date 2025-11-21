@@ -1,73 +1,64 @@
-# Welcome to your Lovable project
+# AgendaFlow - SaaS de Agendamento
 
-## Project info
+Sistema completo de agendamento para estabelecimentos comerciais.
 
-**URL**: https://lovable.dev/projects/d429df04-67a3-425b-968a-65577e950b30
+## 🚀 Quick Start
 
-## How can I edit this code?
+### Pré-requisitos
+- Docker e Docker Compose
+- Node.js 20+ (para desenvolvimento local)
 
-There are several ways of editing your application.
+### Rodar Localmente
 
-**Use Lovable**
+1. Clone o repositório:
+git clone https://github.com/thonycs8/agendaflow.git
+cd agendaflow2. Configure as variáveis de ambiente:sh
+cp .env.example .env
+# Edite .env com suas configurações3. Inicie os serviços:ash
+docker-compose up --build4. Execute as migrações:ash
+docker-compose exec backend npm run prisma:migrate5. Seed do banco (opcional):sh
+docker-compose exec backend npm run prisma:seed6. Acesse:
+- Frontend: http://localhost:8080
+- Backend API: http://localhost:3000
+- Prisma Studio: `docker-compose exec backend npm run prisma:studio`
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d429df04-67a3-425b-968a-65577e950b30) and start prompting.
+## 📁 Estrutura do Projeto
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+agendaflow/
+├── backend/          # API Node.js + Express + Prisma
+├── frontend/         # React + Vite + TypeScript
+├── docker-compose.yml
+└── .env.example
 ```
 
-**Edit a file directly in GitHub**
+## 🔧 Variáveis de Ambiente
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Veja `.env.example` para lista completa.
 
-**Use GitHub Codespaces**
+**Obrigatórias:**
+- `DATABASE_URL` - URL de conexão PostgreSQL
+- `JWT_SECRET` - Secret para JWT tokens
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+**Opcionais (para features completas):**
+- `STRIPE_SECRET_KEY` - Para billing
+- `SMTP_*` - Para emails
+- `TWILIO_*` - Para WhatsApp (ou use webhook)
 
-## What technologies are used for this project?
+## 🧪 Testes
 
-This project is built with:
+### Backend
+```bash
+cd backend
+npm test
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Frontend (E2E)
+```bash
+cd frontend
+npm run cypress:open
+```
 
-## How can I deploy this project?
+## 📝 Checklist para Lançar Piloto
 
-Simply open [Lovable](https://lovable.dev/projects/d429df04-67a3-425b-968a-65577e950b30) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- [ ] Configurar variáveis de ambi
