@@ -36,7 +36,7 @@ const Home = () => {
   }, [user, navigate]);
 
   return (
-    <AppLayout title="Início">
+    <AppLayout>
       <div className="space-y-6">
         <Card className="bg-gradient-primary text-primary-foreground">
           <CardContent className="pt-6">
