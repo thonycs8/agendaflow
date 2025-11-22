@@ -9,9 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import AdminUserList from "@/components/admin/AdminUserList";
 import AdminBusinessList from "@/components/admin/AdminBusinessList";
 import AdminSettings from "./AdminSettings";
-import { AdminNav } from "@/components/layout/AdminNav";
-import { AdminSidebar } from "@/components/layout/AdminSidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LandingPageEditor } from "@/components/admin/LandingPageEditor";
 import { BlogManager } from "@/components/admin/BlogManager";
@@ -151,26 +148,21 @@ const AdminDashboard = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full flex-col">
-        <AdminNav />
-        
-        <div className="flex flex-1">
-          <AdminSidebar />
-          
-          <main className="flex-1 overflow-auto">
-            <div className="container py-6">
-              <div className="flex items-center gap-2 mb-6 md:hidden">
-                <SidebarTrigger />
-                <h1 className="text-xl font-bold">Menu Admin</h1>
-              </div>
-              
-              {renderContent()}
-            </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    <div className="space-y-6">
+      <Tabs value={activeTab} onValueChange={(value) => navigate(`#${value}`)}>
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="usuarios">Usuários</TabsTrigger>
+          <TabsTrigger value="negocios">Negócios</TabsTrigger>
+          <TabsTrigger value="landing-page">Landing Page</TabsTrigger>
+          <TabsTrigger value="blog">Blog</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={activeTab} className="mt-6">
+          {renderContent()}
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
