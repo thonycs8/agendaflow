@@ -135,7 +135,7 @@ const Agendar = () => {
   };
 
   return (
-    <AppLayout title="Agendar Serviço">
+    <AppLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         <Card>
           <CardHeader>

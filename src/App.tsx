@@ -78,34 +78,32 @@ const AppContent = () => {
   const isPublicRoute =
     PUBLIC_ROUTES.includes(location.pathname) || PUBLIC_PREFIXES.some((prefix) => location.pathname.startsWith(prefix));
 
-  if (isPublicRoute) {
-    return (
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/blog/:slug" element={<BlogPost />} />
-
-        <Route path="/developer" element={<Developer />} />
-        <Route path="/gdpr" element={<GDPR />} />
-        <Route path="/privacidade" element={<Privacidade />} />
-        <Route path="/termos" element={<Termos />} />
-        <Route path="/faq" element={<FAQ />} />
-        <Route path="/reembolso" element={<Reembolso />} />
-        <Route path="/contacto" element={<Contacto />} />
-
-        <Route path="/negocio/:slug" element={<BusinessPublic />} />
-
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    );
-  }
-
   return (
-    <AppLayout>
-      <Routes>
+    <>
+      {isPublicRoute ? (
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
+
+          <Route path="/developer" element={<Developer />} />
+          <Route path="/gdpr" element={<GDPR />} />
+          <Route path="/privacidade" element={<Privacidade />} />
+          <Route path="/termos" element={<Termos />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/reembolso" element={<Reembolso />} />
+          <Route path="/contacto" element={<Contacto />} />
+
+          <Route path="/negocio/:slug" element={<BusinessPublic />} />
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      ) : (
+        <AppLayout>
+          <Routes>
         {/* Base Protected */}
         <Route
           path="/dashboard"
@@ -319,8 +317,10 @@ const AppContent = () => {
 
         {/* Catch-all */}
         <Route path="*" element={<NotFound />} />
-      </Routes>
-    </AppLayout>
+          </Routes>
+        </AppLayout>
+      )}
+    </>
   );
 };
 

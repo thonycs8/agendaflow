@@ -65,7 +65,7 @@ const Assinaturas = () => {
   };
 
   return (
-    <AppLayout title="Planos Premium">
+    <AppLayout>
       <div className="space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold">Torne-se Premium</h1>

@@ -69,7 +69,7 @@ const Profissionais = () => {
   };
 
   return (
-    <AppLayout title="Profissionais">
+    <AppLayout>
       <div className="space-y-6">
         <div className="flex flex-col gap-4">
           <div>

@@ -37,7 +37,7 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <AppLayout title="Perfil">
+      <AppLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -46,7 +46,7 @@ const Profile = () => {
   }
 
   return (
-    <AppLayout title="Meu Perfil">
+    <AppLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         {isAdmin && (
           <Card className="border-2 border-primary bg-gradient-to-br from-primary/5 via-background to-background">

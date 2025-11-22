@@ -1,32 +1,19 @@
 import { ReactNode } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { TopNav } from "./TopNav";
-import { AppSidebar } from "./AppSidebar";
-import { AppFooter } from "./AppFooter";
+import { GlobalNavbar } from "./GlobalNavbar";
 
 interface AppLayoutProps {
   children: ReactNode;
-  title?: string;
 }
 
-export const AppLayout = ({ children, title }: AppLayoutProps) => {
+export const AppLayout = ({ children }: AppLayoutProps) => {
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex flex-col w-full">
-        <TopNav />
-        
-        <div className="flex flex-1 w-full">
-          <AppSidebar />
-          
-          <main className="flex-1 overflow-y-auto">
-            <div className="container py-6">
-              {children}
-            </div>
-          </main>
+    <div className="min-h-screen flex flex-col">
+      <GlobalNavbar />
+      <main className="flex-1">
+        <div className="container py-6 max-w-7xl">
+          {children}
         </div>
-        
-        <AppFooter />
-      </div>
-    </SidebarProvider>
+      </main>
+    </div>
   );
 };

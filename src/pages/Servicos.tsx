@@ -64,7 +64,7 @@ const Servicos = () => {
   };
 
   return (
-    <AppLayout title="Serviços">
+    <AppLayout>
       <div className="space-y-6">
         <div className="flex flex-col gap-4">
           <div>
