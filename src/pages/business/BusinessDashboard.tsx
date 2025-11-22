@@ -14,9 +14,7 @@ import ClientsManagement from "./ClientsManagement";
 import MembershipPlans from "./MembershipPlans";
 import FinancialManagement from "./FinancialManagement";
 import BusinessSettings from "./BusinessSettings";
-import { GlobalNav } from "@/components/layout/GlobalNav";
-import { BusinessSidebar } from "@/components/layout/BusinessSidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const BusinessDashboard = () => {
   const { user } = useAuth();
@@ -154,26 +152,24 @@ const BusinessDashboard = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full flex-col">
-        <GlobalNav />
-        
-        <div className="flex flex-1">
-          <BusinessSidebar />
-          
-          <main className="flex-1 overflow-auto">
-            <div className="container py-6">
-              <div className="flex items-center gap-2 mb-6 md:hidden">
-                <SidebarTrigger />
-                <h1 className="text-xl font-bold">Menu</h1>
-              </div>
-              
-              {renderContent()}
-            </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    <div className="space-y-6">
+      <Tabs value={activeTab} onValueChange={(value) => navigate(`#${value}`)}>
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="agendamentos">Agenda</TabsTrigger>
+          <TabsTrigger value="profissionais">Profissionais</TabsTrigger>
+          <TabsTrigger value="servicos">Serviços</TabsTrigger>
+          <TabsTrigger value="clientes">Clientes</TabsTrigger>
+          <TabsTrigger value="planos">Assinaturas</TabsTrigger>
+          <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={activeTab} className="mt-6">
+          {renderContent()}
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
