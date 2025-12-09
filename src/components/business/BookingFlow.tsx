@@ -9,9 +9,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, addMinutes, isSameDay, parseISO, isWithinInterval, setHours, setMinutes } from "date-fns";
 import { pt } from "date-fns/locale";
-import { ArrowLeft, ArrowRight, Clock, Euro } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock, Euro, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface BookingFlowProps {
   businessId: string;
@@ -33,6 +34,19 @@ interface Professional {
   rating: number;
 }
 
+interface Appointment {
+  id: string;
+  appointment_date: string;
+  duration_minutes: number;
+  status: string;
+}
+
+interface ScheduleBlock {
+  id: string;
+  start_time: string;
+  end_time: string;
+}
+
 export const BookingFlow = ({ businessId }: BookingFlowProps) => {
   const { user } = useAuth();
   const [step, setStep] = useState(1);
@@ -43,6 +57,7 @@ export const BookingFlow = ({ businessId }: BookingFlowProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+  const [loadingTimes, setLoadingTimes] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Client info for guest booking
@@ -61,10 +76,10 @@ export const BookingFlow = ({ businessId }: BookingFlowProps) => {
   }, [selectedService]);
 
   useEffect(() => {
-    if (selectedDate && selectedProfessional) {
-      generateAvailableTimes();
+    if (selectedDate && selectedProfessional && selectedService) {
+      fetchAvailableTimes();
     }
-  }, [selectedDate, selectedProfessional]);
+  }, [selectedDate, selectedProfessional, selectedService]);
 
   const fetchServices = async () => {
     const { data } = await supabase
@@ -88,13 +103,92 @@ export const BookingFlow = ({ businessId }: BookingFlowProps) => {
     if (data) setProfessionals(data);
   };
 
-  const generateAvailableTimes = () => {
-    const times: string[] = [];
-    for (let hour = 9; hour <= 18; hour++) {
-      times.push(`${hour.toString().padStart(2, "0")}:00`);
-      times.push(`${hour.toString().padStart(2, "0")}:30`);
+  const fetchAvailableTimes = async () => {
+    if (!selectedDate || !selectedProfessional || !selectedService) return;
+
+    setLoadingTimes(true);
+    setSelectedTime("");
+
+    try {
+      // Fetch existing appointments for the professional on selected date
+      const startOfDay = new Date(selectedDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(selectedDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const { data: appointments } = await supabase
+        .from("appointments")
+        .select("id, appointment_date, duration_minutes, status")
+        .eq("professional_id", selectedProfessional.id)
+        .gte("appointment_date", startOfDay.toISOString())
+        .lte("appointment_date", endOfDay.toISOString())
+        .neq("status", "cancelled");
+
+      // Fetch schedule blocks for the professional
+      const { data: scheduleBlocks } = await supabase
+        .from("schedule_blocks")
+        .select("id, start_time, end_time")
+        .eq("professional_id", selectedProfessional.id)
+        .gte("end_time", startOfDay.toISOString())
+        .lte("start_time", endOfDay.toISOString());
+
+      // Generate all possible time slots (9:00 - 19:00)
+      const allSlots: string[] = [];
+      for (let hour = 9; hour <= 19; hour++) {
+        allSlots.push(`${hour.toString().padStart(2, "0")}:00`);
+        if (hour < 19) {
+          allSlots.push(`${hour.toString().padStart(2, "0")}:30`);
+        }
+      }
+
+      // Filter out unavailable times
+      const serviceDuration = selectedService.duration_minutes;
+      const availableSlots = allSlots.filter((timeSlot) => {
+        const [hours, minutes] = timeSlot.split(":").map(Number);
+        const slotStart = new Date(selectedDate);
+        slotStart.setHours(hours, minutes, 0, 0);
+        const slotEnd = addMinutes(slotStart, serviceDuration);
+
+        // Check if slot is in the past
+        if (slotStart < new Date()) return false;
+
+        // Check against existing appointments
+        const hasConflictingAppointment = appointments?.some((apt) => {
+          const aptStart = parseISO(apt.appointment_date);
+          const aptEnd = addMinutes(aptStart, apt.duration_minutes);
+          
+          // Check for overlap
+          return (
+            (slotStart >= aptStart && slotStart < aptEnd) ||
+            (slotEnd > aptStart && slotEnd <= aptEnd) ||
+            (slotStart <= aptStart && slotEnd >= aptEnd)
+          );
+        });
+
+        if (hasConflictingAppointment) return false;
+
+        // Check against schedule blocks
+        const hasBlockConflict = scheduleBlocks?.some((block) => {
+          const blockStart = parseISO(block.start_time);
+          const blockEnd = parseISO(block.end_time);
+
+          return (
+            (slotStart >= blockStart && slotStart < blockEnd) ||
+            (slotEnd > blockStart && slotEnd <= blockEnd) ||
+            (slotStart <= blockStart && slotEnd >= blockEnd)
+          );
+        });
+
+        return !hasBlockConflict;
+      });
+
+      setAvailableTimes(availableSlots);
+    } catch (error) {
+      console.error("Error fetching available times:", error);
+      toast.error("Erro ao carregar horários disponíveis");
+    } finally {
+      setLoadingTimes(false);
     }
-    setAvailableTimes(times);
   };
 
   const handleBooking = async () => {
@@ -347,25 +441,56 @@ export const BookingFlow = ({ businessId }: BookingFlowProps) => {
                 <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
               </Button>
               <h3 className="font-semibold text-lg">Escolha o horário</h3>
-              <div className="grid grid-cols-4 gap-2">
-                {availableTimes.map((time) => (
+              <p className="text-sm text-muted-foreground">
+                Horários disponíveis para {selectedProfessional?.name} em{" "}
+                {selectedDate && format(selectedDate, "dd/MM/yyyy")}
+              </p>
+              
+              {loadingTimes ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <span className="ml-2 text-muted-foreground">Carregando horários...</span>
+                </div>
+              ) : availableTimes.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">
+                    Não há horários disponíveis para esta data.
+                  </p>
                   <Button
-                    key={time}
-                    variant={selectedTime === time ? "default" : "outline"}
-                    onClick={() => setSelectedTime(time)}
-                    className="w-full"
+                    variant="outline"
+                    onClick={() => setStep(3)}
+                    className="mt-4"
                   >
-                    {time}
+                    Escolher outra data
                   </Button>
-                ))}
-              </div>
-              <Button
-                onClick={() => setStep(5)}
-                disabled={!selectedTime}
-                className="w-full"
-              >
-                Próximo <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                  {availableTimes.map((time) => (
+                    <Button
+                      key={time}
+                      variant={selectedTime === time ? "default" : "outline"}
+                      onClick={() => setSelectedTime(time)}
+                      className={cn(
+                        "w-full transition-all",
+                        selectedTime === time && "ring-2 ring-primary ring-offset-2"
+                      )}
+                    >
+                      {time}
+                    </Button>
+                  ))}
+                </div>
+              )}
+              
+              {availableTimes.length > 0 && (
+                <Button
+                  onClick={() => setStep(5)}
+                  disabled={!selectedTime}
+                  className="w-full"
+                >
+                  Próximo <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              )}
             </div>
           )}
 
