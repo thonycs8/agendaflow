@@ -124,6 +124,13 @@ const BusinessPublic = () => {
     );
   }
 
+  const scrollToBooking = () => {
+    setShowBooking(true);
+    setTimeout(() => {
+      document.getElementById("booking-section")?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -157,7 +164,8 @@ const BusinessPublic = () => {
               ({business.total_reviews || 0} avaliações)
             </span>
           </div>
-          <Button size="lg" className="text-lg px-8">
+          <Button size="lg" className="text-lg px-8" onClick={scrollToBooking}>
+            <CalendarIcon className="mr-2 h-5 w-5" />
             Agendar Agora
           </Button>
         </div>
@@ -187,6 +195,15 @@ const BusinessPublic = () => {
         </div>
       </section>
 
+      {/* Booking Section */}
+      {showBooking && (
+        <section id="booking-section" className="py-16 bg-accent/10">
+          <div className="container">
+            <BookingFlow businessId={business.id} />
+          </div>
+        </section>
+      )}
+
       {/* Promotional Banner */}
       <section className="py-12 bg-gradient-primary text-primary-foreground">
         <div className="container text-center">
@@ -194,7 +211,7 @@ const BusinessPublic = () => {
           <p className="text-xl mb-6">
             Ganhe 20% de desconto no seu primeiro agendamento
           </p>
-          <Button size="lg" variant="secondary">
+          <Button size="lg" variant="secondary" onClick={scrollToBooking}>
             Aproveitar Oferta
           </Button>
         </div>
@@ -260,7 +277,10 @@ const BusinessPublic = () => {
                       €{service.price.toFixed(2)}
                     </span>
                   </div>
-                  <Button className="w-full">Agendar</Button>
+                  <Button className="w-full" onClick={scrollToBooking}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    Agendar
+                  </Button>
                 </CardContent>
               </Card>
             ))}
