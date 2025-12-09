@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,8 +68,7 @@ const Profissionais = () => {
   };
 
   return (
-    <AppLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex flex-col gap-4">
           <div>
             <h1 className="text-3xl font-bold">Nossos Profissionais</h1>
@@ -164,8 +162,7 @@ const Profissionais = () => {
             ))}
           </div>
         )}
-      </div>
-    </AppLayout>
+    </div>
   );
 };
 
