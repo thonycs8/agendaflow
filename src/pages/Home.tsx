@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserRole } from "@/hooks/use-user-role";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, Briefcase, Star } from "lucide-react";
@@ -36,8 +35,7 @@ const Home = () => {
   }, [user, navigate]);
 
   return (
-    <AppLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <Card className="bg-gradient-primary text-primary-foreground">
           <CardContent className="pt-6">
             <h1 className="text-3xl font-bold mb-2">
@@ -108,8 +106,7 @@ const Home = () => {
             </Button>
           </CardContent>
         </Card>
-      </div>
-    </AppLayout>
+    </div>
   );
 };
 
