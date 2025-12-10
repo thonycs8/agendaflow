@@ -37,7 +37,7 @@ interface Client {
 
 export default function ClientsManagement() {
   const { user } = useAuth();
-  const { isBusinessOwner, loading: roleLoading } = useUserRole();
+  const { isBusinessOwner, isProfessional, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const [clients, setClients] = useState<Client[]>([]);
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
@@ -47,10 +47,11 @@ export default function ClientsManagement() {
   const [clientHistory, setClientHistory] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!roleLoading && !isBusinessOwner) {
+    // Allow access for business owners AND professionals
+    if (!roleLoading && !isBusinessOwner && !isProfessional) {
       navigate("/login");
     }
-  }, [isBusinessOwner, roleLoading, navigate]);
+  }, [isBusinessOwner, isProfessional, roleLoading, navigate]);
 
   useEffect(() => {
     const fetchClients = async () => {
