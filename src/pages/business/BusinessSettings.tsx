@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -9,10 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Clock, Calendar, Save, Building2, MessageCircle } from "lucide-react";
+import { Settings, Clock, Calendar, Save, Building2, MessageCircle, ImageIcon, Upload, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
 import { TransferOwnershipDialog } from "@/components/business/TransferOwnershipDialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const settingsSchema = z.object({
   opening_hours: z.record(z.object({
@@ -71,7 +72,10 @@ export default function BusinessSettings() {
   });
 
   const [whatsappNumber, setWhatsappNumber] = useState("");
-
+  const [businessName, setBusinessName] = useState("");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (!roleLoading && !isBusinessOwner) {
       navigate("/login");
@@ -84,9 +88,9 @@ export default function BusinessSettings() {
 
       const { data: businessData } = await supabase
         .from("businesses")
-        .select("id, name, whatsapp_number")
+        .select("id, name, whatsapp_number, logo_url")
         .eq("owner_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (!businessData) {
         setLoading(false);
@@ -95,6 +99,9 @@ export default function BusinessSettings() {
 
       setBusinessId(businessData.id);
       setBusiness(businessData);
+      setWhatsappNumber(businessData.whatsapp_number || "");
+      setBusinessName(businessData.name || "");
+      setLogoUrl(businessData.logo_url || null);
       setWhatsappNumber(businessData.whatsapp_number || "");
 
       const { data: settings } = await supabase
@@ -301,8 +308,12 @@ export default function BusinessSettings() {
         </div>
       </div>
 
-      <Tabs defaultValue="hours" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="branding" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="branding">
+            <ImageIcon className="mr-2 h-4 w-4" />
+            Branding
+          </TabsTrigger>
           <TabsTrigger value="hours">
             <Clock className="mr-2 h-4 w-4" />
             Horários
@@ -320,6 +331,201 @@ export default function BusinessSettings() {
             WhatsApp
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="branding">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Identidade Visual
+              </CardTitle>
+              <CardDescription>
+                Configure o logo e o nome de exibição do seu estabelecimento
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Logo Upload */}
+              <div className="space-y-4">
+                <Label>Logo do Estabelecimento</Label>
+                <div className="flex items-center gap-6">
+                  <Avatar className="h-24 w-24 border-2 border-dashed border-muted-foreground/25">
+                    {logoUrl ? (
+                      <AvatarImage src={logoUrl} alt={businessName} />
+                    ) : (
+                      <AvatarFallback className="bg-muted text-muted-foreground">
+                        <Building2 className="h-10 w-10" />
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div className="space-y-2">
+                    <input
+                      type="file"
+                      ref={logoInputRef}
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+
+                        if (file.size > 2 * 1024 * 1024) {
+                          toast({
+                            title: "Ficheiro muito grande",
+                            description: "O logo deve ter no máximo 2MB",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+
+                        setUploadingLogo(true);
+                        try {
+                          const fileExt = file.name.split('.').pop();
+                          const fileName = `${businessId}-${Date.now()}.${fileExt}`;
+                          const filePath = `logos/${fileName}`;
+
+                          const { error: uploadError } = await supabase.storage
+                            .from('business-logos')
+                            .upload(filePath, file);
+
+                          if (uploadError) throw uploadError;
+
+                          const { data: { publicUrl } } = supabase.storage
+                            .from('business-logos')
+                            .getPublicUrl(filePath);
+
+                          const { error: updateError } = await supabase
+                            .from('businesses')
+                            .update({ logo_url: publicUrl })
+                            .eq('id', businessId);
+
+                          if (updateError) throw updateError;
+
+                          setLogoUrl(publicUrl);
+                          toast({
+                            title: "Sucesso",
+                            description: "Logo atualizado com sucesso",
+                          });
+                        } catch (error) {
+                          console.error('Upload error:', error);
+                          toast({
+                            title: "Erro",
+                            description: "Não foi possível fazer upload do logo",
+                            variant: "destructive",
+                          });
+                        } finally {
+                          setUploadingLogo(false);
+                        }
+                      }}
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() => logoInputRef.current?.click()}
+                      disabled={uploadingLogo}
+                    >
+                      {uploadingLogo ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2" />
+                          A enviar...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="mr-2 h-4 w-4" />
+                          Carregar Logo
+                        </>
+                      )}
+                    </Button>
+                    {logoUrl && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive"
+                        onClick={async () => {
+                          const { error } = await supabase
+                            .from('businesses')
+                            .update({ logo_url: null })
+                            .eq('id', businessId);
+
+                          if (!error) {
+                            setLogoUrl(null);
+                            toast({
+                              title: "Logo removido",
+                              description: "O logo foi removido com sucesso",
+                            });
+                          }
+                        }}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Remover
+                      </Button>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Recomendado: 200x200px, máx. 2MB (PNG, JPG, WEBP)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Business Name */}
+              <div className="space-y-2">
+                <Label htmlFor="businessName">Nome de Exibição</Label>
+                <Input
+                  id="businessName"
+                  placeholder="Nome do seu estabelecimento"
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Este nome será exibido na página pública e nos emails de confirmação
+                </p>
+              </div>
+
+              {/* Preview */}
+              <div className="p-4 border rounded-lg bg-muted/50">
+                <h4 className="font-medium mb-3">Pré-visualização</h4>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12">
+                    {logoUrl ? (
+                      <AvatarImage src={logoUrl} alt={businessName} />
+                    ) : (
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {businessName?.charAt(0)?.toUpperCase() || "N"}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div>
+                    <p className="font-semibold">{businessName || "Nome do Negócio"}</p>
+                    <p className="text-sm text-muted-foreground">O seu estabelecimento</p>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                onClick={async () => {
+                  const { error } = await supabase
+                    .from("businesses")
+                    .update({ name: businessName })
+                    .eq("id", businessId);
+
+                  if (error) {
+                    toast({
+                      title: "Erro",
+                      description: "Não foi possível guardar as alterações",
+                      variant: "destructive",
+                    });
+                  } else {
+                    toast({
+                      title: "Sucesso",
+                      description: "Nome de exibição atualizado",
+                    });
+                  }
+                }}
+                className="w-full"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                Guardar Alterações
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="hours">
           <Card>
