@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserRole } from "@/hooks/use-user-role";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -37,17 +36,14 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <AppLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </AppLayout>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   return (
-    <AppLayout>
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
         {isAdmin && (
           <Card className="border-2 border-primary bg-gradient-to-br from-primary/5 via-background to-background">
             <CardHeader>
@@ -261,8 +257,7 @@ const Profile = () => {
             </CardContent>
           </Card>
         )}
-      </div>
-    </AppLayout>
+    </div>
   );
 };
 
