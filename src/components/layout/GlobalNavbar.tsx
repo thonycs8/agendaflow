@@ -85,14 +85,7 @@ export const GlobalNavbar = () => {
     if (isBusinessOwner) {
       return [
         { to: "/business", label: "Dashboard", icon: LayoutDashboard },
-        { to: "/business/agenda", label: "Agenda", icon: Calendar },
-        { to: "/business/profissionais", label: "Profissionais", icon: Users },
-        { to: "/business/servicos", label: "Serviços", icon: Briefcase },
-        { to: "/business/clientes", label: "Clientes", icon: Users },
-        { to: "/business/financeiro", label: "Financeiro", icon: DollarSign },
-        { to: "/business/assinaturas", label: "Assinaturas", icon: CreditCard },
-        { to: "/business/analytics", label: "Analytics", icon: BarChart3 },
-        { to: "/business/configuracoes", label: "Configurações", icon: Settings },
+        { to: "/profile", label: "Perfil", icon: User },
       ];
     }
 
