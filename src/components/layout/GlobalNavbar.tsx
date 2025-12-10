@@ -172,8 +172,6 @@ export const GlobalNavbar = () => {
     </div>
   );
 
-  if (loading) return null;
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container flex h-16 items-center justify-between">
@@ -186,7 +184,7 @@ export const GlobalNavbar = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        {user && <div className="hidden md:block flex-1 px-8">
+        {!loading && user && <div className="hidden md:block flex-1 px-8">
           <NavLinks />
         </div>}
 
