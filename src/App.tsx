@@ -46,6 +46,7 @@ import AnalyticsDashboard from "./pages/business/AnalyticsDashboard";
 import ClientsManagement from "./pages/business/ClientsManagement";
 import FinancialManagement from "./pages/business/FinancialManagement";
 import MembershipPlans from "./pages/business/MembershipPlans";
+import FeatureManagement from "./pages/business/FeatureManagement";
 
 // Professional
 import ProfessionalDashboard from "./pages/professional/ProfessionalDashboard";
@@ -273,6 +274,25 @@ const AppContent = () => {
           element={
             <ProtectedRoute requiredRole="business_owner">
               <BusinessSettings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/business/funcionalidades"
+          element={
+            <ProtectedRoute requiredRole="business_owner">
+              <FeatureManagement />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Feature Management - accessible by admin, business_owner, professional */}
+        <Route
+          path="/funcionalidades"
+          element={
+            <ProtectedRoute>
+              <FeatureManagement />
             </ProtectedRoute>
           }
         />
