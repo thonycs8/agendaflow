@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Briefcase, TrendingUp, DollarSign } from "lucide-react";
 import { ProfessionalClients } from "@/components/professional/ProfessionalClients";
+import { UnifiedCalendar } from "@/components/calendar/UnifiedCalendar";
+import { GoogleCalendarConnect } from "@/components/calendar/GoogleCalendarConnect";
 
 const ProfessionalDashboard = () => {
   const { user } = useAuth();
@@ -133,11 +135,20 @@ const ProfessionalDashboard = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="clients" className="space-y-4">
+      <Tabs defaultValue="calendario" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="calendario">Calendário</TabsTrigger>
           <TabsTrigger value="clients">Clientes</TabsTrigger>
           <TabsTrigger value="promotions">Promoções</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="calendario" className="space-y-4">
+          <GoogleCalendarConnect professionalId={professional.id} />
+          <UnifiedCalendar 
+            businessId={professional.business_id} 
+            professionalId={professional.id} 
+          />
+        </TabsContent>
 
         <TabsContent value="clients" className="space-y-4">
           <ProfessionalClients />
