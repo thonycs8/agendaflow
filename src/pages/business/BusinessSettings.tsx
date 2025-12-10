@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Clock, Calendar, DollarSign, Save, Building2 } from "lucide-react";
+import { Settings, Clock, Calendar, Save, Building2, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { z } from "zod";
 import { TransferOwnershipDialog } from "@/components/business/TransferOwnershipDialog";
@@ -70,6 +70,8 @@ export default function BusinessSettings() {
     beard_only: "12.00",
   });
 
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+
   useEffect(() => {
     if (!roleLoading && !isBusinessOwner) {
       navigate("/login");
@@ -80,23 +82,25 @@ export default function BusinessSettings() {
     const fetchSettings = async () => {
       if (!user) return;
 
-      const { data: business } = await supabase
+      const { data: businessData } = await supabase
         .from("businesses")
-        .select("id")
+        .select("id, name, whatsapp_number")
         .eq("owner_id", user.id)
         .single();
 
-      if (!business) {
+      if (!businessData) {
         setLoading(false);
         return;
       }
 
-      setBusinessId(business.id);
+      setBusinessId(businessData.id);
+      setBusiness(businessData);
+      setWhatsappNumber(businessData.whatsapp_number || "");
 
       const { data: settings } = await supabase
         .from("business_settings")
         .select("*")
-        .eq("business_id", business.id)
+        .eq("business_id", businessData.id)
         .single();
 
       if (settings) {
@@ -118,7 +122,7 @@ export default function BusinessSettings() {
         const { data: newSettings } = await supabase
           .from("business_settings")
           .insert({
-            business_id: business.id,
+            business_id: businessData.id,
             opening_hours: openingHours,
             holidays: [],
             ...bookingSettings,
@@ -298,7 +302,7 @@ export default function BusinessSettings() {
       </div>
 
       <Tabs defaultValue="hours" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="hours">
             <Clock className="mr-2 h-4 w-4" />
             Horários
@@ -310,6 +314,10 @@ export default function BusinessSettings() {
           <TabsTrigger value="booking">
             <Settings className="mr-2 h-4 w-4" />
             Agendamento
+          </TabsTrigger>
+          <TabsTrigger value="whatsapp">
+            <MessageCircle className="mr-2 h-4 w-4" />
+            WhatsApp
           </TabsTrigger>
         </TabsList>
 
@@ -530,6 +538,76 @@ export default function BusinessSettings() {
               <Button onClick={handleSaveBookingSettings} className="w-full">
                 <Save className="mr-2 h-4 w-4" />
                 Guardar Configurações
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="whatsapp">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircle className="h-5 w-5 text-[#25D366]" />
+                Configuração do WhatsApp
+              </CardTitle>
+              <CardDescription>
+                Configure o número de WhatsApp que será exibido no botão flutuante da sua página pública
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="whatsapp">Número do WhatsApp</Label>
+                <Input
+                  id="whatsapp"
+                  type="tel"
+                  placeholder="+351 912 345 678"
+                  value={whatsappNumber}
+                  onChange={(e) => setWhatsappNumber(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Inclua o código do país (ex: +351 para Portugal, +55 para Brasil)
+                </p>
+              </div>
+
+              <div className="p-4 border rounded-lg bg-muted/50">
+                <h4 className="font-medium mb-2">Pré-visualização</h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  O botão flutuante do WhatsApp aparecerá no canto inferior direito da página pública do seu estabelecimento.
+                </p>
+                {whatsappNumber && (
+                  <div className="flex items-center gap-2">
+                    <div className="h-12 w-12 rounded-full bg-[#25D366] flex items-center justify-center text-white">
+                      <MessageCircle className="h-6 w-6" />
+                    </div>
+                    <span className="text-sm">{whatsappNumber}</span>
+                  </div>
+                )}
+              </div>
+
+              <Button 
+                onClick={async () => {
+                  const { error } = await supabase
+                    .from("businesses")
+                    .update({ whatsapp_number: whatsappNumber })
+                    .eq("id", businessId);
+
+                  if (error) {
+                    toast({
+                      title: "Erro",
+                      description: "Não foi possível guardar o número do WhatsApp",
+                      variant: "destructive",
+                    });
+                  } else {
+                    toast({
+                      title: "Sucesso",
+                      description: "Número do WhatsApp atualizado",
+                    });
+                  }
+                }} 
+                className="w-full"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                Guardar Número do WhatsApp
               </Button>
             </CardContent>
           </Card>
