@@ -14,6 +14,7 @@ import ClientsManagement from "./ClientsManagement";
 import MembershipPlans from "./MembershipPlans";
 import FinancialManagement from "./FinancialManagement";
 import BusinessSettings from "./BusinessSettings";
+import FeatureManagement from "./FeatureManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const BusinessDashboard = () => {
@@ -92,6 +93,8 @@ const BusinessDashboard = () => {
           return <FinancialManagement />;
         case "analytics":
           return <AnalyticsDashboard />;
+        case "funcionalidades":
+          return <FeatureManagement embedded />;
         case "configuracoes":
           return <BusinessSettings />;
         default:
@@ -154,7 +157,7 @@ const BusinessDashboard = () => {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={(value) => navigate(`#${value}`)}>
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-9">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="agendamentos">Agenda</TabsTrigger>
           <TabsTrigger value="profissionais">Profissionais</TabsTrigger>
@@ -163,6 +166,7 @@ const BusinessDashboard = () => {
           <TabsTrigger value="planos">Assinaturas</TabsTrigger>
           <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="funcionalidades">Funcionalidades</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-6">

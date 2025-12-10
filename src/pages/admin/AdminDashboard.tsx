@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserRole } from "@/hooks/use-user-role";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Building2, Calendar } from "lucide-react";
+import { Users, Building2, Calendar, Settings } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import AdminUserList from "@/components/admin/AdminUserList";
@@ -12,6 +12,7 @@ import AdminSettings from "./AdminSettings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LandingPageEditor } from "@/components/admin/LandingPageEditor";
 import { BlogManager } from "@/components/admin/BlogManager";
+import FeatureManagement from "@/pages/business/FeatureManagement";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -77,6 +78,8 @@ const AdminDashboard = () => {
           );
         case "blog":
           return <BlogManager />;
+        case "funcionalidades":
+          return <FeatureManagement embedded />;
         default:
           return (
             <>
@@ -150,10 +153,11 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={(value) => navigate(`#${value}`)}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="usuarios">Usuários</TabsTrigger>
           <TabsTrigger value="negocios">Negócios</TabsTrigger>
+          <TabsTrigger value="funcionalidades">Funcionalidades</TabsTrigger>
           <TabsTrigger value="landing-page">Landing Page</TabsTrigger>
           <TabsTrigger value="blog">Blog</TabsTrigger>
         </TabsList>
