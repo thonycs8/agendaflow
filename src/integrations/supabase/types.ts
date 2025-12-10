@@ -520,6 +520,41 @@ export type Database = {
           },
         ]
       }
+      guest_bookings: {
+        Row: {
+          appointment_id: string | null
+          client_email: string | null
+          client_name: string
+          client_phone: string
+          created_at: string | null
+          id: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_email?: string | null
+          client_name: string
+          client_phone: string
+          created_at?: string | null
+          id?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          client_email?: string | null
+          client_name?: string
+          client_phone?: string
+          created_at?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_bookings_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       landing_page_config: {
         Row: {
           content: string | null
@@ -1112,6 +1147,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_guest_client_id: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

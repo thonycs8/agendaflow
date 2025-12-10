@@ -15,6 +15,9 @@ interface Appointment {
   duration_minutes: number;
   client_id: string;
   client_name?: string;
+  client_phone?: string;
+  client_email?: string;
+  is_guest?: boolean;
   services: { name: string } | null;
   professionals: { name: string } | null;
 }
@@ -22,6 +25,8 @@ interface Appointment {
 interface BusinessAppointmentsProps {
   businessId: string;
 }
+
+const GUEST_CLIENT_ID = "00000000-0000-0000-0000-000000000000";
 
 const BusinessAppointments = ({ businessId }: BusinessAppointmentsProps) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -42,7 +47,7 @@ const BusinessAppointments = ({ businessId }: BusinessAppointmentsProps) => {
       `
       )
       .eq("business_id", businessId)
-      .order("appointment_date", { ascending: true });
+      .order("appointment_date", { ascending: false });
 
     if (error) {
       toast({
@@ -54,19 +59,52 @@ const BusinessAppointments = ({ businessId }: BusinessAppointmentsProps) => {
       return;
     }
 
-    // Fetch client names from profiles
-    const clientIds = [...new Set((data || []).map(a => a.client_id))];
+    // Get appointment IDs for guest bookings lookup
+    const appointmentIds = (data || []).map(a => a.id);
+    
+    // Fetch guest bookings
+    const { data: guestBookings } = await supabase
+      .from("guest_bookings")
+      .select("appointment_id, client_name, client_phone, client_email")
+      .in("appointment_id", appointmentIds);
+
+    const guestMap = new Map(
+      guestBookings?.map(g => [g.appointment_id, g]) || []
+    );
+
+    // Fetch client names from profiles for registered users
+    const registeredClientIds = [...new Set(
+      (data || [])
+        .filter(a => a.client_id !== GUEST_CLIENT_ID)
+        .map(a => a.client_id)
+    )];
+    
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, full_name")
-      .in("id", clientIds);
+      .select("id, full_name, phone")
+      .in("id", registeredClientIds);
 
-    const profileMap = new Map(profiles?.map(p => [p.id, p.full_name]) || []);
+    const profileMap = new Map(
+      profiles?.map(p => [p.id, { name: p.full_name, phone: p.phone }]) || []
+    );
 
-    const enrichedAppointments = (data || []).map(appointment => ({
-      ...appointment,
-      client_name: profileMap.get(appointment.client_id) || "Cliente"
-    }));
+    const enrichedAppointments = (data || []).map(appointment => {
+      const isGuest = appointment.client_id === GUEST_CLIENT_ID;
+      const guestInfo = guestMap.get(appointment.id);
+      const profileInfo = profileMap.get(appointment.client_id);
+
+      return {
+        ...appointment,
+        is_guest: isGuest,
+        client_name: isGuest 
+          ? guestInfo?.client_name || "Cliente Convidado"
+          : profileInfo?.name || "Cliente",
+        client_phone: isGuest 
+          ? guestInfo?.client_phone 
+          : profileInfo?.phone,
+        client_email: guestInfo?.client_email,
+      };
+    });
 
     setAppointments(enrichedAppointments as Appointment[]);
     setLoading(false);
@@ -106,8 +144,21 @@ const BusinessAppointments = ({ businessId }: BusinessAppointmentsProps) => {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold">{appointment.client_name}</h3>
+                  {appointment.is_guest && (
+                    <Badge variant="outline" className="text-xs">Convidado</Badge>
+                  )}
                   <Badge>{appointment.status}</Badge>
                 </div>
+                {appointment.client_phone && (
+                  <p className="text-sm text-muted-foreground">
+                    📱 {appointment.client_phone}
+                  </p>
+                )}
+                {appointment.client_email && (
+                  <p className="text-sm text-muted-foreground">
+                    ✉️ {appointment.client_email}
+                  </p>
+                )}
                 <p className="text-sm">
                   {format(new Date(appointment.appointment_date), "PPP 'às' HH:mm", {
                     locale: ptBR,
