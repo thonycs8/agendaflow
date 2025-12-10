@@ -197,14 +197,24 @@ export const BookingFlow = ({ businessId }: BookingFlowProps) => {
       return;
     }
 
-    // Validate client info if not logged in
+    // Validate client info - phone is always required for guest bookings
     if (!user) {
-      if (!clientName) {
+      if (!clientName.trim()) {
         toast.error("Nome é obrigatório");
         return;
       }
-      if (!clientEmail && !clientPhone) {
-        toast.error("E-mail ou telefone é obrigatório");
+      if (clientName.trim().length < 2) {
+        toast.error("Nome deve ter pelo menos 2 caracteres");
+        return;
+      }
+      if (!clientPhone.trim()) {
+        toast.error("Telefone é obrigatório");
+        return;
+      }
+      // Basic phone validation
+      const cleanPhone = clientPhone.replace(/\D/g, "");
+      if (cleanPhone.length < 9) {
+        toast.error("Telefone inválido");
         return;
       }
     }
@@ -212,69 +222,49 @@ export const BookingFlow = ({ businessId }: BookingFlowProps) => {
     setLoading(true);
 
     try {
-      let clientId = user?.id;
-
-      // Create guest client if not logged in
-      if (!user) {
-        // Check if client exists by email or phone
-        let existingClient = null;
-        
-        if (clientEmail) {
-          const { data } = await supabase
-            .from("profiles")
-            .select("id")
-            .eq("id", (await supabase.auth.signUp({
-              email: clientEmail,
-              password: Math.random().toString(36).slice(-8),
-              options: {
-                data: { full_name: clientName, phone: clientPhone }
-              }
-            })).data?.user?.id || "")
-            .single();
-          existingClient = data;
-        }
-
-        if (!existingClient && clientPhone) {
-          // For phone-only bookings, create a profile without auth
-          const tempEmail = `guest_${Date.now()}@temp.agendaflow.app`;
-          const { data: authData } = await supabase.auth.signUp({
-            email: tempEmail,
-            password: Math.random().toString(36).slice(-8),
-            options: {
-              data: { full_name: clientName, phone: clientPhone }
-            }
-          });
-          clientId = authData?.user?.id;
-        } else if (existingClient) {
-          clientId = existingClient.id;
-        }
-      }
-
-      if (!clientId) {
-        toast.error("Erro ao processar cadastro");
-        setLoading(false);
-        return;
-      }
-
-      // Create appointment
+      // Create appointment with guest client ID
       const appointmentDateTime = new Date(selectedDate);
       const [hours, minutes] = selectedTime.split(":");
       appointmentDateTime.setHours(parseInt(hours), parseInt(minutes));
 
-      const { error } = await supabase.from("appointments").insert({
-        business_id: businessId,
-        professional_id: selectedProfessional.id,
-        client_id: clientId,
-        service_id: selectedService.id,
-        appointment_date: appointmentDateTime.toISOString(),
-        duration_minutes: selectedService.duration_minutes,
-        status: "pending",
-        payment_amount: selectedService.price,
-      });
+      // Use guest client ID for non-authenticated users, or user's ID if logged in
+      const clientId = user?.id || "00000000-0000-0000-0000-000000000000";
 
-      if (error) throw error;
+      const { data: appointment, error: appointmentError } = await supabase
+        .from("appointments")
+        .insert({
+          business_id: businessId,
+          professional_id: selectedProfessional.id,
+          client_id: clientId,
+          service_id: selectedService.id,
+          appointment_date: appointmentDateTime.toISOString(),
+          duration_minutes: selectedService.duration_minutes,
+          status: "pending",
+          payment_amount: selectedService.price,
+        })
+        .select()
+        .single();
 
-      toast.success("Marcação realizada com sucesso! Confirmação enviada por e-mail.");
+      if (appointmentError) throw appointmentError;
+
+      // Create guest booking record if not logged in
+      if (!user && appointment) {
+        const { error: guestError } = await supabase
+          .from("guest_bookings")
+          .insert({
+            appointment_id: appointment.id,
+            client_name: clientName.trim(),
+            client_phone: clientPhone.trim(),
+            client_email: clientEmail.trim() || null,
+          });
+
+        if (guestError) {
+          console.error("Error saving guest info:", guestError);
+          // Don't fail the booking, just log the error
+        }
+      }
+
+      toast.success("Marcação realizada com sucesso!");
       
       // Reset form
       setStep(1);
@@ -287,7 +277,7 @@ export const BookingFlow = ({ businessId }: BookingFlowProps) => {
       setClientPhone("");
     } catch (error: any) {
       console.error("Booking error:", error);
-      toast.error("Erro ao fazer marcação");
+      toast.error("Erro ao fazer marcação. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -526,16 +516,28 @@ export const BookingFlow = ({ businessId }: BookingFlowProps) => {
                   <h4 className="font-semibold">Seus dados</h4>
                   <div className="space-y-3">
                     <div>
-                      <Label htmlFor="name">Nome *</Label>
+                      <Label htmlFor="name">Nome completo *</Label>
                       <Input
                         id="name"
                         value={clientName}
                         onChange={(e) => setClientName(e.target.value)}
                         placeholder="Seu nome completo"
+                        required
                       />
                     </div>
                     <div>
-                      <Label htmlFor="email">E-mail</Label>
+                      <Label htmlFor="phone">Telefone / Telemóvel *</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={clientPhone}
+                        onChange={(e) => setClientPhone(e.target.value)}
+                        placeholder="+351 912 345 678"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email">E-mail (opcional)</Label>
                       <Input
                         id="email"
                         type="email"
@@ -543,20 +545,10 @@ export const BookingFlow = ({ businessId }: BookingFlowProps) => {
                         onChange={(e) => setClientEmail(e.target.value)}
                         placeholder="seu@email.com"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Para receber confirmação por e-mail
+                      </p>
                     </div>
-                    <div>
-                      <Label htmlFor="phone">Telefone</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        value={clientPhone}
-                        onChange={(e) => setClientPhone(e.target.value)}
-                        placeholder="+351 900 000 000"
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      * Nome é obrigatório. E-mail OU telefone também é obrigatório.
-                    </p>
                   </div>
                 </div>
               )}
