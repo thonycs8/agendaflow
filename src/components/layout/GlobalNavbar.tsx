@@ -84,7 +84,12 @@ export const GlobalNavbar = () => {
     if (isBusinessOwner) {
       return [
         { to: "/business", label: "Dashboard", icon: LayoutDashboard },
-        { to: "/profile", label: "Perfil", icon: User },
+        { to: "/business#calendario", label: "Calendário", icon: Calendar },
+        { to: "/business#agendamentos", label: "Agenda", icon: Calendar },
+        { to: "/business#profissionais", label: "Profissionais", icon: Users },
+        { to: "/business#servicos", label: "Serviços", icon: Briefcase },
+        { to: "/business#clientes", label: "Clientes", icon: Users },
+        { to: "/business#configuracoes", label: "Configurações", icon: Settings },
       ];
     }
 
