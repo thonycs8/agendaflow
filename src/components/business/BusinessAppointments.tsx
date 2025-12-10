@@ -13,7 +13,8 @@ interface Appointment {
   status: "pending" | "confirmed" | "completed" | "cancelled";
   notes: string | null;
   duration_minutes: number;
-  profiles: { full_name: string } | null;
+  client_id: string;
+  client_name?: string;
   services: { name: string } | null;
   professionals: { name: string } | null;
 }
@@ -29,14 +30,15 @@ const BusinessAppointments = ({ businessId }: BusinessAppointmentsProps) => {
 
   const fetchAppointments = async () => {
     setLoading(true);
+    
+    // Fetch appointments with services and professionals
     const { data, error } = await supabase
       .from("appointments")
       .select(
         `
         *,
-        profiles!appointments_client_id_fkey(full_name),
-        services!appointments_service_id_fkey(name),
-        professionals!appointments_professional_id_fkey(name)
+        services(name),
+        professionals(name)
       `
       )
       .eq("business_id", businessId)
@@ -48,9 +50,25 @@ const BusinessAppointments = ({ businessId }: BusinessAppointmentsProps) => {
         description: "Não foi possível carregar os agendamentos",
         variant: "destructive",
       });
-    } else {
-      setAppointments(data as any || []);
+      setLoading(false);
+      return;
     }
+
+    // Fetch client names from profiles
+    const clientIds = [...new Set((data || []).map(a => a.client_id))];
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", clientIds);
+
+    const profileMap = new Map(profiles?.map(p => [p.id, p.full_name]) || []);
+
+    const enrichedAppointments = (data || []).map(appointment => ({
+      ...appointment,
+      client_name: profileMap.get(appointment.client_id) || "Cliente"
+    }));
+
+    setAppointments(enrichedAppointments as Appointment[]);
     setLoading(false);
   };
 
@@ -87,7 +105,7 @@ const BusinessAppointments = ({ businessId }: BusinessAppointmentsProps) => {
             <div className="flex justify-between items-start">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold">{appointment.profiles?.full_name}</h3>
+                  <h3 className="font-semibold">{appointment.client_name}</h3>
                   <Badge>{appointment.status}</Badge>
                 </div>
                 <p className="text-sm">
