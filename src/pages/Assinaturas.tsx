@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Crown, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
 interface MembershipPlan {
   id: string;
   name: string;
@@ -65,8 +63,7 @@ const Assinaturas = () => {
   };
 
   return (
-    <AppLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold">Torne-se Premium</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -243,10 +240,9 @@ const Assinaturas = () => {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </AppLayout>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
