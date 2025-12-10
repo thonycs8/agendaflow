@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Star, Clock, MapPin, Phone, Mail, Calendar as CalendarIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BookingFlow } from "@/components/business/BookingFlow";
+import { WhatsAppFloatingButton } from "@/components/WhatsAppFloatingButton";
 
 interface Business {
   id: string;
@@ -21,6 +22,7 @@ interface Business {
   email: string;
   rating: number;
   total_reviews: number;
+  whatsapp_number?: string;
 }
 
 interface Professional {
@@ -368,6 +370,14 @@ const BusinessPublic = () => {
           </div>
         </div>
       </section>
+
+      {/* WhatsApp Floating Button */}
+      {business.whatsapp_number && (
+        <WhatsAppFloatingButton 
+          phoneNumber={business.whatsapp_number} 
+          message={`Olá! Gostaria de mais informações sobre ${business.name}.`}
+        />
+      )}
 
       <Footer />
     </div>

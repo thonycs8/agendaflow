@@ -267,6 +267,7 @@ export type Database = {
           show_promotions_banner: boolean | null
           total_reviews: number | null
           updated_at: string | null
+          whatsapp_number: string | null
         }
         Insert: {
           address?: string | null
@@ -287,6 +288,7 @@ export type Database = {
           show_promotions_banner?: boolean | null
           total_reviews?: number | null
           updated_at?: string | null
+          whatsapp_number?: string | null
         }
         Update: {
           address?: string | null
@@ -307,6 +309,7 @@ export type Database = {
           show_promotions_banner?: boolean | null
           total_reviews?: number | null
           updated_at?: string | null
+          whatsapp_number?: string | null
         }
         Relationships: []
       }
