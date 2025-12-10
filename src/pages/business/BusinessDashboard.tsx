@@ -15,6 +15,8 @@ import MembershipPlans from "./MembershipPlans";
 import FinancialManagement from "./FinancialManagement";
 import BusinessSettings from "./BusinessSettings";
 import FeatureManagement from "./FeatureManagement";
+import { UnifiedCalendar } from "@/components/calendar/UnifiedCalendar";
+import { GoogleCalendarConnect } from "@/components/calendar/GoogleCalendarConnect";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const BusinessDashboard = () => {
@@ -79,6 +81,13 @@ const BusinessDashboard = () => {
   const renderContent = () => {
     const content = (() => {
       switch (activeTab) {
+        case "calendario":
+          return (
+            <div className="space-y-6">
+              <GoogleCalendarConnect />
+              <UnifiedCalendar businessId={business.id} showAllProfessionals />
+            </div>
+          );
         case "agendamentos":
           return <BusinessAppointments businessId={business.id} />;
         case "profissionais":
@@ -157,8 +166,9 @@ const BusinessDashboard = () => {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={(value) => navigate(`#${value}`)}>
-        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-9">
+        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="calendario">Calendário</TabsTrigger>
           <TabsTrigger value="agendamentos">Agenda</TabsTrigger>
           <TabsTrigger value="profissionais">Profissionais</TabsTrigger>
           <TabsTrigger value="servicos">Serviços</TabsTrigger>

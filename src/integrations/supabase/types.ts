@@ -21,6 +21,7 @@ export type Database = {
           client_id: string
           created_at: string | null
           duration_minutes: number
+          google_event_id: string | null
           id: string
           notes: string | null
           payment_amount: number | null
@@ -37,6 +38,7 @@ export type Database = {
           client_id: string
           created_at?: string | null
           duration_minutes: number
+          google_event_id?: string | null
           id?: string
           notes?: string | null
           payment_amount?: number | null
@@ -53,6 +55,7 @@ export type Database = {
           client_id?: string
           created_at?: string | null
           duration_minutes?: number
+          google_event_id?: string | null
           id?: string
           notes?: string | null
           payment_amount?: number | null
@@ -306,6 +309,50 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      calendar_integrations: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string
+          id: string
+          professional_id: string | null
+          provider: string
+          refresh_token: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          professional_id?: string | null
+          provider?: string
+          refresh_token?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          professional_id?: string | null
+          provider?: string
+          refresh_token?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_integrations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       client_memberships: {
         Row: {
