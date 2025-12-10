@@ -78,7 +78,6 @@ export const GlobalNavbar = () => {
         { to: "/admin#usuarios", label: "Usuários", icon: Users },
         { to: "/admin#negocios", label: "Negócios", icon: Building2 },
         { to: "/admin#landing", label: "Landing Page", icon: FileText },
-        { to: "/admin#blog", label: "Blog", icon: FileText },
       ];
     }
 
