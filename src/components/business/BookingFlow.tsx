@@ -11,9 +11,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { format, addMinutes, isSameDay, parseISO, isWithinInterval, setHours, setMinutes } from "date-fns";
 import { pt } from "date-fns/locale";
-import { ArrowLeft, ArrowRight, Clock, Euro, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock, Euro, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-
+import { guestBookingSchema, validateForm } from "@/lib/validation";
 interface BookingFlowProps {
   businessId: string;
 }
@@ -64,6 +64,10 @@ export const BookingFlow = ({ businessId }: BookingFlowProps) => {
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
   const [clientPhone, setClientPhone] = useState("");
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  
+  // Honeypot field for spam protection
+  const [honeypot, setHoneypot] = useState("");
 
   useEffect(() => {
     fetchServices();
@@ -197,26 +201,30 @@ export const BookingFlow = ({ businessId }: BookingFlowProps) => {
       return;
     }
 
-    // Validate client info - phone is always required for guest bookings
+    // Spam protection: if honeypot field is filled, silently reject
+    if (honeypot) {
+      // Pretend success but don't actually create the booking
+      toast.success("Marcação realizada com sucesso!");
+      setStep(1);
+      return;
+    }
+
+    // Validate client info for guest bookings using zod schema
     if (!user) {
-      if (!clientName.trim()) {
-        toast.error("Nome é obrigatório");
+      const cleanPhone = clientPhone.replace(/[^0-9+]/g, "");
+      const validation = validateForm(guestBookingSchema, {
+        clientName: clientName.trim(),
+        clientPhone: cleanPhone,
+        clientEmail: clientEmail.trim() || undefined,
+      });
+      
+      if (!validation.success) {
+        setFormErrors('errors' in validation ? validation.errors : {});
+        const firstError = Object.values('errors' in validation ? validation.errors : {})[0];
+        toast.error(firstError || "Por favor, corrija os erros no formulário");
         return;
       }
-      if (clientName.trim().length < 2) {
-        toast.error("Nome deve ter pelo menos 2 caracteres");
-        return;
-      }
-      if (!clientPhone.trim()) {
-        toast.error("Telefone é obrigatório");
-        return;
-      }
-      // Basic phone validation
-      const cleanPhone = clientPhone.replace(/\D/g, "");
-      if (cleanPhone.length < 9) {
-        toast.error("Telefone inválido");
-        return;
-      }
+      setFormErrors({});
     }
 
     setLoading(true);
@@ -515,15 +523,36 @@ export const BookingFlow = ({ businessId }: BookingFlowProps) => {
                 <div className="space-y-4 pt-4 border-t">
                   <h4 className="font-semibold">Seus dados</h4>
                   <div className="space-y-3">
+                    {/* Honeypot field - hidden from real users, bots will fill it */}
+                    <input
+                      type="text"
+                      name="website"
+                      value={honeypot}
+                      onChange={(e) => setHoneypot(e.target.value)}
+                      style={{ display: 'none' }}
+                      tabIndex={-1}
+                      autoComplete="off"
+                    />
+                    
                     <div>
                       <Label htmlFor="name">Nome completo *</Label>
                       <Input
                         id="name"
                         value={clientName}
-                        onChange={(e) => setClientName(e.target.value)}
+                        onChange={(e) => {
+                          setClientName(e.target.value);
+                          if (formErrors.clientName) setFormErrors({ ...formErrors, clientName: "" });
+                        }}
                         placeholder="Seu nome completo"
+                        className={formErrors.clientName ? "border-destructive" : ""}
+                        maxLength={100}
                         required
                       />
+                      {formErrors.clientName && (
+                        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+                          <AlertCircle className="h-3 w-3" /> {formErrors.clientName}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="phone">Telefone / Telemóvel *</Label>
@@ -531,10 +560,20 @@ export const BookingFlow = ({ businessId }: BookingFlowProps) => {
                         id="phone"
                         type="tel"
                         value={clientPhone}
-                        onChange={(e) => setClientPhone(e.target.value)}
+                        onChange={(e) => {
+                          setClientPhone(e.target.value);
+                          if (formErrors.clientPhone) setFormErrors({ ...formErrors, clientPhone: "" });
+                        }}
                         placeholder="+351 912 345 678"
+                        className={formErrors.clientPhone ? "border-destructive" : ""}
+                        maxLength={20}
                         required
                       />
+                      {formErrors.clientPhone && (
+                        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+                          <AlertCircle className="h-3 w-3" /> {formErrors.clientPhone}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="email">E-mail (opcional)</Label>
@@ -542,9 +581,19 @@ export const BookingFlow = ({ businessId }: BookingFlowProps) => {
                         id="email"
                         type="email"
                         value={clientEmail}
-                        onChange={(e) => setClientEmail(e.target.value)}
+                        onChange={(e) => {
+                          setClientEmail(e.target.value);
+                          if (formErrors.clientEmail) setFormErrors({ ...formErrors, clientEmail: "" });
+                        }}
                         placeholder="seu@email.com"
+                        className={formErrors.clientEmail ? "border-destructive" : ""}
+                        maxLength={255}
                       />
+                      {formErrors.clientEmail && (
+                        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+                          <AlertCircle className="h-3 w-3" /> {formErrors.clientEmail}
+                        </p>
+                      )}
                       <p className="text-xs text-muted-foreground mt-1">
                         Para receber confirmação por e-mail
                       </p>
