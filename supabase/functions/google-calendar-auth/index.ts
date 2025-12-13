@@ -10,6 +10,7 @@ const GOOGLE_CLIENT_ID = Deno.env.get("GOOGLE_CLIENT_ID");
 const GOOGLE_CLIENT_SECRET = Deno.env.get("GOOGLE_CLIENT_SECRET");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -17,8 +18,44 @@ serve(async (req) => {
   }
 
   try {
+    // Validate the user from JWT token
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Authorization header required" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Create a client with the user's token to validate their identity
+    const userClient = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+      global: {
+        headers: { Authorization: authHeader },
+      },
+    });
+
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    
+    if (authError || !user) {
+      console.error("Auth error:", authError);
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Use the authenticated user's ID instead of trusting the request body
+    const authenticatedUserId = user.id;
+
+    // Create admin client for database operations
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-    const { action, code, redirectUri, userId, professionalId } = await req.json();
+    const { action, code, redirectUri, professionalId } = await req.json();
+
+    console.log(`[google-calendar-auth] Action: ${action}, User: ${authenticatedUserId}`);
 
     if (action === "getAuthUrl") {
       const scope = encodeURIComponent("https://www.googleapis.com/auth/calendar");
@@ -45,14 +82,15 @@ serve(async (req) => {
       const tokens = await tokenResponse.json();
       
       if (tokens.error) {
+        console.error("Token exchange error:", tokens.error);
         throw new Error(tokens.error_description || tokens.error);
       }
 
-      // Store tokens in database
+      // Store tokens in database using authenticated user's ID
       const { error } = await supabase
         .from("calendar_integrations")
         .upsert({
-          user_id: userId,
+          user_id: authenticatedUserId,
           professional_id: professionalId,
           provider: "google",
           access_token: tokens.access_token,
@@ -60,7 +98,12 @@ serve(async (req) => {
           expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
         }, { onConflict: "user_id,provider" });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Database error:", error);
+        throw error;
+      }
+
+      console.log(`[google-calendar-auth] Successfully stored tokens for user: ${authenticatedUserId}`);
 
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -71,7 +114,7 @@ serve(async (req) => {
       const { data: integration } = await supabase
         .from("calendar_integrations")
         .select("*")
-        .eq("user_id", userId)
+        .eq("user_id", authenticatedUserId)
         .eq("provider", "google")
         .single();
 
@@ -92,6 +135,11 @@ serve(async (req) => {
 
       const tokens = await tokenResponse.json();
 
+      if (tokens.error) {
+        console.error("Token refresh error:", tokens.error);
+        throw new Error(tokens.error_description || tokens.error);
+      }
+
       await supabase
         .from("calendar_integrations")
         .update({
@@ -99,6 +147,8 @@ serve(async (req) => {
           expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
         })
         .eq("id", integration.id);
+
+      console.log(`[google-calendar-auth] Refreshed token for user: ${authenticatedUserId}`);
 
       return new Response(JSON.stringify({ access_token: tokens.access_token }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

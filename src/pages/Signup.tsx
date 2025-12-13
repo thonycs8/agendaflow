@@ -3,11 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "lucide-react";
+import { Calendar, AlertCircle, Check, X } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { signupSchema, validateForm } from "@/lib/validation";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -15,12 +16,21 @@ const Signup = () => {
     email: "",
     password: "",
     businessName: "",
-    userType: "business", // business or client
+    userType: "business" as "business" | "client",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Password strength indicators
+  const passwordChecks = {
+    length: formData.password.length >= 8,
+    uppercase: /[A-Z]/.test(formData.password),
+    lowercase: /[a-z]/.test(formData.password),
+    number: /[0-9]/.test(formData.password),
+  };
 
   useEffect(() => {
     if (user) {
@@ -28,8 +38,29 @@ const Signup = () => {
     }
   }, [user, navigate]);
 
+  const handleInputChange = (field: string, value: string) => {
+    setFormData({ ...formData, [field]: value });
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: "" });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form
+    const validation = validateForm(signupSchema, formData);
+    if (!validation.success) {
+      setErrors('errors' in validation ? validation.errors : {});
+      toast({
+        title: "Erro de validação",
+        description: "Por favor, corrija os erros no formulário.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -49,24 +80,20 @@ const Signup = () => {
       if (error) throw error;
 
       if (data.user) {
-        // Add business_owner role if user type is business
-        if (formData.userType === "business") {
-          const { error: roleError } = await supabase
-            .from("user_roles")
-            .insert({ user_id: data.user.id, role: "business_owner" });
+        // Note: Role assignment is now handled by the handle_new_user() database trigger
+        // The trigger reads user_type from raw_user_meta_data and assigns the appropriate role
+        
+        // Create business if business name provided and user type is business
+        if (formData.userType === "business" && formData.businessName) {
+          const { error: businessError } = await supabase
+            .from("businesses")
+            .insert({
+              name: formData.businessName,
+              owner_id: data.user.id,
+            });
 
-          if (roleError) console.error("Error adding role:", roleError);
-
-          // Create business if business name provided
-          if (formData.businessName) {
-            const { error: businessError } = await supabase
-              .from("businesses")
-              .insert({
-                name: formData.businessName,
-                owner_id: data.user.id,
-              });
-
-            if (businessError) console.error("Error creating business:", businessError);
+          if (businessError) {
+            console.error("Error creating business:", businessError);
           }
         }
 
@@ -86,6 +113,28 @@ const Signup = () => {
       setLoading(false);
     }
   };
+
+  const PasswordStrengthIndicator = () => (
+    <div className="mt-2 space-y-1">
+      {[
+        { check: passwordChecks.length, label: "Mínimo 8 caracteres" },
+        { check: passwordChecks.uppercase, label: "Uma letra maiúscula" },
+        { check: passwordChecks.lowercase, label: "Uma letra minúscula" },
+        { check: passwordChecks.number, label: "Um número" },
+      ].map(({ check, label }) => (
+        <div key={label} className="flex items-center gap-2 text-xs">
+          {check ? (
+            <Check className="h-3 w-3 text-green-500" />
+          ) : (
+            <X className="h-3 w-3 text-muted-foreground" />
+          )}
+          <span className={check ? "text-green-600" : "text-muted-foreground"}>
+            {label}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-accent/20 to-background p-4 py-12">
@@ -110,7 +159,7 @@ const Signup = () => {
               <Label>Tipo de conta</Label>
               <RadioGroup
                 value={formData.userType}
-                onValueChange={(value) => setFormData({ ...formData, userType: value })}
+                onValueChange={(value) => handleInputChange("userType", value)}
               >
                 <div className="flex items-center space-x-2 border rounded-lg p-3 cursor-pointer hover:bg-accent/50">
                   <RadioGroupItem value="business" id="business" />
@@ -136,9 +185,16 @@ const Signup = () => {
                 type="text"
                 placeholder="João Silva"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => handleInputChange("name", e.target.value)}
+                className={errors.name ? "border-destructive" : ""}
+                maxLength={100}
                 required
               />
+              {errors.name && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" /> {errors.name}
+                </p>
+              )}
             </div>
 
             {formData.userType === "business" && (
@@ -149,9 +205,16 @@ const Signup = () => {
                   type="text"
                   placeholder="Nome do seu negócio"
                   value={formData.businessName}
-                  onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                  onChange={(e) => handleInputChange("businessName", e.target.value)}
+                  className={errors.businessName ? "border-destructive" : ""}
+                  maxLength={100}
                   required
                 />
+                {errors.businessName && (
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" /> {errors.businessName}
+                  </p>
+                )}
               </div>
             )}
 
@@ -162,9 +225,16 @@ const Signup = () => {
                 type="email"
                 placeholder="seu@email.com"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                className={errors.email ? "border-destructive" : ""}
+                maxLength={255}
                 required
               />
+              {errors.email && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" /> {errors.email}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -174,10 +244,17 @@ const Signup = () => {
                 type="password"
                 placeholder="••••••••"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) => handleInputChange("password", e.target.value)}
+                className={errors.password ? "border-destructive" : ""}
+                maxLength={128}
                 required
               />
-              <p className="text-xs text-muted-foreground">Mínimo 8 caracteres</p>
+              {errors.password && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" /> {errors.password}
+                </p>
+              )}
+              {formData.password && <PasswordStrengthIndicator />}
             </div>
 
             <Button type="submit" className="w-full" variant="hero" size="lg" disabled={loading}>

@@ -8,6 +8,7 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -15,14 +16,49 @@ serve(async (req) => {
   }
 
   try {
+    // Validate the user from JWT token
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Authorization header required" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Create a client with the user's token to validate their identity
+    const userClient = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+      global: {
+        headers: { Authorization: authHeader },
+      },
+    });
+
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    
+    if (authError || !user) {
+      console.error("Auth error:", authError);
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Use the authenticated user's ID instead of trusting the request body
+    const authenticatedUserId = user.id;
+
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-    const { action, userId, appointmentId, eventData } = await req.json();
+    const { action, appointmentId, eventData } = await req.json();
+
+    console.log(`[google-calendar-sync] Action: ${action}, User: ${authenticatedUserId}`);
 
     // Get user's Google Calendar integration
     const { data: integration } = await supabase
       .from("calendar_integrations")
       .select("*")
-      .eq("user_id", userId)
+      .eq("user_id", authenticatedUserId)
       .eq("provider", "google")
       .single();
 
@@ -36,11 +72,22 @@ serve(async (req) => {
     // Check if token needs refresh
     let accessToken = integration.access_token;
     if (new Date(integration.expires_at) < new Date()) {
+      console.log(`[google-calendar-sync] Token expired, refreshing...`);
+      
+      // Call google-calendar-auth to refresh token
       const refreshResponse = await fetch(`${SUPABASE_URL}/functions/v1/google-calendar-auth`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "refreshToken", userId }),
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": authHeader,
+        },
+        body: JSON.stringify({ action: "refreshToken" }),
       });
+      
+      if (!refreshResponse.ok) {
+        throw new Error("Failed to refresh token");
+      }
+      
       const refreshData = await refreshResponse.json();
       accessToken = refreshData.access_token;
     }
@@ -72,6 +119,11 @@ serve(async (req) => {
 
       const event = await response.json();
 
+      if (event.error) {
+        console.error("Google Calendar API error:", event.error);
+        throw new Error(event.error.message || "Failed to create calendar event");
+      }
+
       // Store the Google event ID with the appointment
       if (appointmentId) {
         await supabase
@@ -79,6 +131,8 @@ serve(async (req) => {
           .update({ google_event_id: event.id })
           .eq("id", appointmentId);
       }
+
+      console.log(`[google-calendar-sync] Created event: ${event.id}`);
 
       return new Response(JSON.stringify({ success: true, eventId: event.id }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -94,10 +148,32 @@ serve(async (req) => {
 
       if (!appointment?.google_event_id) {
         // If no Google event exists, create one
-        return await fetch(req.url, {
+        console.log(`[google-calendar-sync] No existing event, creating new one`);
+        const createResponse = await fetch(baseUrl, {
           method: "POST",
-          headers: req.headers,
-          body: JSON.stringify({ ...await req.json(), action: "create" }),
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            summary: eventData.title,
+            description: eventData.description,
+            start: { dateTime: eventData.startTime, timeZone: "Europe/Lisbon" },
+            end: { dateTime: eventData.endTime, timeZone: "Europe/Lisbon" },
+          }),
+        });
+
+        const event = await createResponse.json();
+        
+        if (appointmentId && event.id) {
+          await supabase
+            .from("appointments")
+            .update({ google_event_id: event.id })
+            .eq("id", appointmentId);
+        }
+
+        return new Response(JSON.stringify({ success: true, eventId: event.id }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
@@ -114,6 +190,8 @@ serve(async (req) => {
           end: { dateTime: eventData.endTime, timeZone: "Europe/Lisbon" },
         }),
       });
+
+      console.log(`[google-calendar-sync] Updated event: ${appointment.google_event_id}`);
 
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -132,6 +210,7 @@ serve(async (req) => {
           method: "DELETE",
           headers: { Authorization: `Bearer ${accessToken}` },
         });
+        console.log(`[google-calendar-sync] Deleted event: ${appointment.google_event_id}`);
       }
 
       return new Response(JSON.stringify({ success: true }), {
@@ -151,6 +230,8 @@ serve(async (req) => {
       );
 
       const events = await response.json();
+
+      console.log(`[google-calendar-sync] Listed ${events.items?.length || 0} events`);
 
       return new Response(JSON.stringify({ events: events.items || [] }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
