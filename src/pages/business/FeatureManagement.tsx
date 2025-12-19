@@ -20,7 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Check, X, Loader2, Settings, Building, Shield, Save } from "lucide-react";
+import { Check, X, Loader2, Settings, Building, Shield, Save, Plus } from "lucide-react";
+import CreateBusinessDialog from "@/components/admin/CreateBusinessDialog";
 
 interface FeatureConfig {
   id: string;
@@ -99,6 +100,7 @@ export default function FeatureManagement({ embedded = false }: FeatureManagemen
   
   const [activeTab, setActiveTab] = useState(isAdmin && !embedded ? "global" : "business");
   const [editingFeature, setEditingFeature] = useState<{ [key: string]: BusinessFeature }>({});
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   useEffect(() => {
     if (!roleLoading && !user && !embedded) {
@@ -452,6 +454,14 @@ export default function FeatureManagement({ embedded = false }: FeatureManagemen
 
         {/* Business Features Tab */}
         <TabsContent value="business" className="space-y-6">
+          {isAdmin && (
+            <div className="flex justify-end">
+              <Button onClick={() => setShowCreateDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Estabelecimento
+              </Button>
+            </div>
+          )}
           {loadingBusiness ? (
             <div className="flex items-center justify-center p-8">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -638,6 +648,15 @@ export default function FeatureManagement({ embedded = false }: FeatureManagemen
           )}
         </TabsContent>
       </Tabs>
+
+      <CreateBusinessDialog
+        open={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["business-features"] });
+          setShowCreateDialog(false);
+        }}
+      />
     </div>
   );
 }
