@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Briefcase, TrendingUp, DollarSign } from "lucide-react";
 import { ProfessionalClients } from "@/components/professional/ProfessionalClients";
+import { ProfessionalPromotions } from "@/components/professional/ProfessionalPromotions";
 import { UnifiedCalendar } from "@/components/calendar/UnifiedCalendar";
 import { GoogleCalendarConnect } from "@/components/calendar/GoogleCalendarConnect";
 
@@ -155,16 +156,7 @@ const ProfessionalDashboard = () => {
         </TabsContent>
 
         <TabsContent value="promotions" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Promoções</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Funcionalidade de promoções em desenvolvimento
-              </p>
-            </CardContent>
-          </Card>
+          <ProfessionalPromotions />
         </TabsContent>
       </Tabs>
     </div>
